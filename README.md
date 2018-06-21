@@ -1,5 +1,5 @@
 # taon
-[![Build Status](https://travis-ci.org/eiri/taon.svg?branch=master)](https://travis-ci.org/eiri/taon)
+[![Build Status](https://travis-ci.com/eiri/taon.svg?branch=master)](https://travis-ci.com/eiri/taon)
 
 Transform JSON into ASCII table.
 
