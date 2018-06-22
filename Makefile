@@ -7,6 +7,8 @@ help: ## this help message
 .PHONY: print
 print: ## print test data
 	@cat $(PWD)/testdata/object.json | go run main.go
+	@echo
+	@cat $(PWD)/testdata/array.json | go run main.go
 
 .PHONY: test
 test: ## run tests
