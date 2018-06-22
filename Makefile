@@ -7,7 +7,7 @@ help: ## this help message
 	@awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z_-]+:.*?## / {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}' $(MAKEFILE_LIST)
 
 .PHONY: all
-all: test build ## test and build
+all: deps test build ## test and build
 
 .PHONY: build
 build: ## build the binary
@@ -35,7 +35,3 @@ run: ## run for debug
 .PHONY: deps
 deps: ## install deps
 	go get -t ./...
-
-# deps alias for tarvis
-.PHONY: install
-install: deps
