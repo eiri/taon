@@ -1,6 +1,7 @@
 .DEFAULT_GOAL := all
 
 NAME=taon
+VERSION=`git describe --tags`
 
 .PHONY: help
 help: ## this help message
@@ -11,7 +12,7 @@ all: deps test build ## test and build
 
 .PHONY: build
 build: ## build the binary
-	go build -o $(NAME) -v
+	go build -ldflags "-X main.version=$(VERSION)" -o $(NAME) -v
 
 .PHONY: test
 test: ## run tests
