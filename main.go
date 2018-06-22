@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/olekukonko/tablewriter"
+	"gopkg.in/alecthomas/kingpin.v2"
 	"io"
 	"os"
 	"reflect"
@@ -19,11 +20,17 @@ const (
 	exitRenderTable
 )
 
+var version = "dev"
+
 func main() {
 	var r io.Reader
 	var w io.Writer
 	r = os.Stdin
 	w = os.Stdout
+
+	kingpin.Version(version)
+    kingpin.CommandLine.HelpFlag.Short('h')
+	kingpin.Parse()
 
 	header, rows, err := parseJSON(r)
 	if err != nil {
