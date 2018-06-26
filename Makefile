@@ -1,7 +1,9 @@
 .DEFAULT_GOAL := all
 
-NAME=taon
-VERSION=`git describe --tags`
+NAME := taon
+VERSION := $(shell git describe --tags)
+PLATFORMS := windows linux darwin
+os = $(word 1, $@)
 
 .PHONY: help
 help: ## this help message
@@ -12,7 +14,7 @@ all: deps test build ## test and build
 
 .PHONY: build
 build: ## build the binary
-	go build -ldflags "-X main.version=$(VERSION)" -o $(NAME) -v
+	go build -ldflags "-s -w -X main.version=$(VERSION)" -o $(NAME) -v
 
 .PHONY: test
 test: ## run tests
@@ -22,6 +24,7 @@ test: ## run tests
 clean: ## clean up
 	go clean
 	rm -f $(NAME)
+	rm -rf release
 
 .PHONY: format
 format: ## format code
@@ -36,3 +39,11 @@ run: ## run for debug
 .PHONY: deps
 deps: ## install deps
 	go get -t ./...
+
+.PHONY: release
+release: windows linux darwin ## build binaries for release
+
+.PHONY: $(PLATFORMS)
+$(PLATFORMS):
+	mkdir -p release
+	CGO_ENABLED=0 GOOS=$(os) GOARCH=amd64 go build -ldflags "-s -w -X main.version=$(VERSION)" -o release/$(NAME)-$(VERSION)-$(os)-amd64 && gzip -9 release/$(NAME)-$(VERSION)-$(os)-amd64
