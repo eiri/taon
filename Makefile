@@ -34,7 +34,7 @@ format: ## format code
 run: ## run for debug
 	@cat $(PWD)/testdata/object.json | go run main.go
 	@echo
-	@cat $(PWD)/testdata/array.json | go run main.go
+	@cat $(PWD)/testdata/array.json | go run main.go -c seq -c number -c name
 
 .PHONY: deps
 deps: ## install deps

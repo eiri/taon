@@ -20,7 +20,11 @@ const (
 	exitRenderTable
 )
 
-var version = "dev"
+var (
+	version = "dev"
+	columns = kingpin.Flag("columns", "List of columns to display").
+		Short('c').Strings()
+)
 
 func main() {
 	var r io.Reader
@@ -29,12 +33,12 @@ func main() {
 	w = os.Stdout
 
 	kingpin.Version(version)
-    kingpin.CommandLine.HelpFlag.Short('h')
+	kingpin.CommandLine.HelpFlag.Short('h')
 	kingpin.Parse()
 
 	header, rows, err := parseJSON(r)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "%s\n", err)
+		fmt.Fprintf(os.Stderr, "ERROR: %s\n", err)
 		os.Exit(exitParseError)
 	}
 
@@ -71,6 +75,10 @@ func parseJSON(r io.Reader) (header []string, rows [][]string, err error) {
 		err = errors.New("Unsupported JSON data structure")
 		return
 	}
+	if len(header) == 0 {
+		err = errors.New("Can't find specified column(s)")
+		return
+	}
 
 	for _, v := range vv {
 		// we just skip none-object rows for now
@@ -91,8 +99,18 @@ func makeHeader(val interface{}) []string {
 	var header []string
 	r := reflect.ValueOf(val)
 	for _, key := range r.MapKeys() {
-		header = append(header, fmt.Sprintf("%s", key))
+		header = append(header, key.String())
 	}
 	sort.Strings(header)
+	if len(*columns) > 0 {
+		var tmp []string
+		for _, key := range *columns {
+			i := sort.SearchStrings(header, key)
+			if i < len(header) && header[i] == key {
+				tmp = append(tmp, key)
+			}
+		}
+		header = tmp
+	}
 	return header
 }
