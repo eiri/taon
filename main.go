@@ -22,8 +22,7 @@ const (
 
 var (
 	version = "dev"
-	columns = kingpin.Flag("columns", "List of columns to display").
-		Short('c').Strings()
+	columns = &ColumnsValue{}
 )
 
 func main() {
@@ -34,6 +33,9 @@ func main() {
 
 	kingpin.Version(version)
 	kingpin.CommandLine.HelpFlag.Short('h')
+	s := kingpin.Flag("columns", "List of columns to display").
+		PlaceHolder("COL1,COL2").Short('c')
+	s.SetValue((*ColumnsValue)(columns))
 	kingpin.Parse()
 
 	header, rows, err := parseJSON(r)

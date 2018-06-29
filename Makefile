@@ -32,9 +32,9 @@ format: ## format code
 
 .PHONY: run
 run: ## run for debug
-	@cat $(PWD)/testdata/object.json | go run main.go
+	@cat $(PWD)/testdata/object.json | go run main.go columns_value.go
 	@echo
-	@cat $(PWD)/testdata/array.json | go run main.go -c seq -c number -c name
+	@cat $(PWD)/testdata/array.json | go run main.go columns_value.go -c seq,number,name
 
 .PHONY: deps
 deps: ## install deps

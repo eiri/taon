@@ -9,14 +9,14 @@ import (
 )
 
 type headertestpair struct {
-	columns *[]string
+	columns *ColumnsValue
 	expect  []string
 }
 
 var headertests = []headertestpair{
-	{&[]string{}, []string{"a", "b", "o", "r", "z"}},
-	{&[]string{"r", "a"}, []string{"r", "a"}},
-	{&[]string{"b", "x", "z", "p"}, []string{"b", "z"}},
+	{&ColumnsValue{}, []string{"a", "b", "o", "r", "z"}},
+	{&ColumnsValue{"r", "a"}, []string{"r", "a"}},
+	{&ColumnsValue{"b", "x", "z", "p"}, []string{"b", "z"}},
 }
 
 // TestMakeHeader to ensure we are getting sorted list of strings
@@ -33,7 +33,7 @@ func TestMakeHeader(t *testing.T) {
 
 // TestParseJSONObject to ensure we can parse JSON object
 func TestParseJSONObject(t *testing.T) {
-	columns = &[]string{}
+	columns = &ColumnsValue{}
 	obj := map[string]interface{}{
 		"int":    42,
 		"string": "answer",
@@ -60,7 +60,7 @@ func TestParseJSONObject(t *testing.T) {
 
 // TestParseJSONArray to ensure we can parse array of JSON objects
 func TestParseJSONArray(t *testing.T) {
-	columns = &[]string{}
+	columns = &ColumnsValue{}
 	var arr []interface{}
 	for i, l := range "abcde" {
 		obj := map[string]interface{}{"#": i, "char": string(l)}
