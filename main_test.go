@@ -10,13 +10,13 @@ import (
 
 type headertestpair struct {
 	columns *ColumnsValue
-	expect  []string
+	expect  Header
 }
 
 var headertests = []headertestpair{
-	{&ColumnsValue{}, []string{"a", "b", "o", "r", "z"}},
-	{&ColumnsValue{"r", "a"}, []string{"r", "a"}},
-	{&ColumnsValue{"b", "x", "z", "p"}, []string{"b", "z"}},
+	{&ColumnsValue{}, Header{"a", "b", "o", "r", "z"}},
+	{&ColumnsValue{"r", "a"}, Header{"r", "a"}},
+	{&ColumnsValue{"b", "x", "z", "p"}, Header{"b", "z"}},
 }
 
 // TestMakeHeader to ensure we are getting sorted list of strings

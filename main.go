@@ -12,6 +12,9 @@ import (
 	"sort"
 )
 
+// Header is an alias for slice of strings used to define headers
+type Header []string
+
 const (
 	exitOK = iota
 	exitParseError
@@ -97,8 +100,8 @@ func parseJSON(r io.Reader) (header []string, rows [][]string, err error) {
 	return
 }
 
-func makeHeader(val interface{}) []string {
-	var header []string
+func makeHeader(val interface{}) Header {
+	var header Header
 	r := reflect.ValueOf(val)
 	for _, key := range r.MapKeys() {
 		header = append(header, key.String())
