@@ -8,18 +8,32 @@ import (
 	"testing"
 )
 
+type headertestpair struct {
+	columns *ColumnsValue
+	expect  []string
+}
+
+var headertests = []headertestpair{
+	{&ColumnsValue{}, []string{"a", "b", "o", "r", "z"}},
+	{&ColumnsValue{"r", "a"}, []string{"r", "a"}},
+	{&ColumnsValue{"b", "x", "z", "p"}, []string{"b", "z"}},
+}
+
 // TestMakeHeader to ensure we are getting sorted list of strings
 func TestMakeHeader(t *testing.T) {
 	in := map[string]int{"b": 1, "z": 2, "a": 3, "r": 4, "o": 5}
-	out := makeHeader(in)
-	expect := []string{"a", "b", "o", "r", "z"}
-	if !reflect.DeepEqual(expect, out) {
-		t.Errorf("Expecting %#v, got %#v", expect, out)
+	for _, pair := range headertests {
+		columns = pair.columns
+		out := makeHeader(in)
+		if !reflect.DeepEqual(pair.expect, out) {
+			t.Errorf("Expecting %#v, got %#v", pair.expect, out)
+		}
 	}
 }
 
 // TestParseJSONObject to ensure we can parse JSON object
 func TestParseJSONObject(t *testing.T) {
+	columns = &ColumnsValue{}
 	obj := map[string]interface{}{
 		"int":    42,
 		"string": "answer",
@@ -46,6 +60,7 @@ func TestParseJSONObject(t *testing.T) {
 
 // TestParseJSONArray to ensure we can parse array of JSON objects
 func TestParseJSONArray(t *testing.T) {
+	columns = &ColumnsValue{}
 	var arr []interface{}
 	for i, l := range "abcde" {
 		obj := map[string]interface{}{"#": i, "char": string(l)}
