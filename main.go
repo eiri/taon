@@ -17,16 +17,15 @@ type Header []string
 
 const (
 	exitOK = iota
-	exitParseError
 	exitOpenFile
-	exitReadInput
+	exitParseError
 	exitRenderTable
 )
 
 var (
 	version = "dev"
 	columns = &ColumnsValue{}
-	file    = kingpin.Arg("file", "File to read").ExistingFile()
+	file    *string
 )
 
 func main() {
@@ -35,26 +34,28 @@ func main() {
 	var err error
 	w = os.Stdout
 
-	kingpin.Version(version)
-	kingpin.CommandLine.HelpFlag.Short('h')
-	s := kingpin.Flag("columns", "List of columns to display").
+	taon := kingpin.New("taon", "Transform JSON into ASCII table.")
+	taon.Version(version)
+	taon.HelpFlag.Short('h')
+	s := taon.Flag("columns", "List of columns to display").
 		PlaceHolder("COL1,COL2").Short('c')
 	s.SetValue((*ColumnsValue)(columns))
-	kingpin.Parse()
+	file = taon.Arg("file", "File to read").ExistingFile()
+	taon.Parse(os.Args[1:])
 
 	if *file == "" {
 		r = os.Stdin
 	} else {
 		r, err = os.Open(*file)
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "ERROR: %s\n", err)
+			taon.Errorf("Failed to open file: %s\n", err)
 			os.Exit(exitOpenFile)
 		}
 	}
 
 	header, rows, err := parseJSON(r)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "ERROR: %s\n", err)
+		taon.Errorf("Failed to parse JSON: %s\n", err)
 		os.Exit(exitParseError)
 	}
 
