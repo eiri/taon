@@ -26,12 +26,13 @@ const (
 var (
 	version = "dev"
 	columns = &ColumnsValue{}
+	file    = kingpin.Arg("file", "File to read").ExistingFile()
 )
 
 func main() {
 	var r io.Reader
 	var w io.Writer
-	r = os.Stdin
+	var err error
 	w = os.Stdout
 
 	kingpin.Version(version)
@@ -40,6 +41,16 @@ func main() {
 		PlaceHolder("COL1,COL2").Short('c')
 	s.SetValue((*ColumnsValue)(columns))
 	kingpin.Parse()
+
+	if *file == "" {
+		r = os.Stdin
+	} else {
+		r, err = os.Open(*file)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "ERROR: %s\n", err)
+			os.Exit(exitOpenFile)
+		}
+	}
 
 	header, rows, err := parseJSON(r)
 	if err != nil {
