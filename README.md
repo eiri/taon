@@ -11,38 +11,63 @@ Drop the binary in your `$PATH` (e.g. `~/bin`) to make it easy to use.
 
 ## Usage
 
-Pass JSON from a file:
+Read JSON from a file:
 ```
-TBD
+$ taon -c seq,name testdata/data.json
++-----+----------+
+| seq |   name   |
++-----+----------+
+| 1   | Donovan  |
+| 2   | Timothy  |
+| 3   | Nici     |
+| 4   | Nigel    |
+| 5   | Saqib    |
+| 6   | Turkeer  |
+| 7   | Damone   |
+| 8   | Mick     |
+| 9   | Theodore |
+| 10  | Hsuan    |
+| 11  | Ramneek  |
+| 12  | Roderick |
++-----+----------+
 ```
 
 Pass JSON from cURL output:
 ```
-TBD
+$ curl -s https://raw.githubusercontent.com/eiri/taon/master/testdata/array.json | taon -c seq,word,bool
++-----+---------------------+-------+
+| seq |        word         | bool  |
++-----+---------------------+-------+
+| 1   | electrophototherapy | false |
+| 2   | twatterlight        | true  |
+| 3   | phlebograph         | false |
+| 4   | Ervipiame           | false |
+| 5   | annexational        | false |
+| 6   | unjewel             | true  |
+| 7   | Anglic              | true  |
+| 8   | alliable            | true  |
+| 9   | seraphism           | true  |
+| 10  | congenialize        | true  |
+| 11  | phu                 | false |
+| 12  | vial                | false |
++-----+---------------------+-------+
 ```
 
 ## Help
 ```
 $ taon --help
+usage: taon [<flags>] [<file>]
+
 Transform JSON into ASCII table.
 
-Usage:
-  taon [OPTIONS] [FILE|-]
+Flags:
+  -h, --help               Show context-sensitive help (also try --help-long and --help-man).
+      --version            Show application version.
+  -c, --columns=COL1,COL2  List of columns to display
 
-Options:
-  -c, --colorize   Colorize output
-      --version    Print version information
+Args:
+  [<file>]  File to read
 
-Exit Codes:
-  0 OK
-  1 Failed to parse JSON
-  2 Failed to open file
-  3 Failed to read input
-  4 Failed to render table
-
-Examples:
-  taon /tmp/somedata.json
-  curl -s http://api.example.com/data/1 | taon
 ```
 
 ## Licence
