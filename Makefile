@@ -32,8 +32,8 @@ format: ## format code
 
 .PHONY: run
 run: ## run for debug
-	@cat $(PWD)/testdata/array.json | go run main.go columns_value.go
-	@go run main.go columns_value.go -c seq,number,name $(PWD)/testdata/array.json
+	@cat $(PWD)/testdata/table.json | go run main.go columns_value.go
+	@go run main.go columns_value.go -c seq,number,name $(PWD)/testdata/table.json
 
 .PHONY: deps
 deps: ## install deps
