@@ -1,6 +1,9 @@
 package main
 
-import "strings"
+import (
+	"fmt"
+	"strings"
+)
 
 // ColumnsValue allows to parse comma separated list of columns
 type ColumnsValue []string
@@ -13,5 +16,5 @@ func (c *ColumnsValue) Set(value string) error {
 }
 
 func (c *ColumnsValue) String() string {
-	return ""
+	return fmt.Sprintf("[%s]", strings.Join(*c, " "))
 }
