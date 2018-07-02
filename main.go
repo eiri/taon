@@ -44,7 +44,7 @@ func main() {
 	s := taon.Flag("columns", "List of columns to display").
 		PlaceHolder("COL1,COL2").Short('c')
 	s.SetValue((*ColumnsValue)(columns))
-	md = taon.Flag("markdown", "Print markdown table").Short('m').Bool()
+	md = taon.Flag("markdown", "Print as markdown table").Short('m').Bool()
 	file = taon.Arg("file", "File to read").ExistingFile()
 	taon.Parse(os.Args[1:])
 
