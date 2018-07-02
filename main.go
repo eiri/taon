@@ -15,6 +15,9 @@ import (
 // Header is an alias for slice of strings used to define headers
 type Header []string
 
+// Rows is an alias for slice of strings' slices representing table rows
+type Rows [][]string
+
 const (
 	exitOK = iota
 	exitOpenFile
@@ -26,6 +29,7 @@ var (
 	version = "dev"
 	columns = &ColumnsValue{}
 	file    *string
+	md      *bool
 )
 
 func main() {
@@ -40,6 +44,7 @@ func main() {
 	s := taon.Flag("columns", "List of columns to display").
 		PlaceHolder("COL1,COL2").Short('c')
 	s.SetValue((*ColumnsValue)(columns))
+	md = taon.Flag("markdown", "Print as markdown table").Short('m').Bool()
 	file = taon.Arg("file", "File to read").ExistingFile()
 	taon.Parse(os.Args[1:])
 
@@ -59,11 +64,15 @@ func main() {
 		os.Exit(exitParseError)
 	}
 
-	renderTable(w, header, rows)
+	if *md {
+		renderMarkdown(w, header, rows)
+	} else {
+		renderTable(w, header, rows)
+	}
 	os.Exit(exitOK)
 }
 
-func renderTable(w io.Writer, header []string, rows [][]string) {
+func renderTable(w io.Writer, header Header, rows Rows) {
 	table := tablewriter.NewWriter(w)
 	table.SetAutoFormatHeaders(false)
 	table.SetAlignment(tablewriter.ALIGN_LEFT)
@@ -72,7 +81,18 @@ func renderTable(w io.Writer, header []string, rows [][]string) {
 	table.Render()
 }
 
-func parseJSON(r io.Reader) (header []string, rows [][]string, err error) {
+func renderMarkdown(w io.Writer, header Header, rows Rows) {
+	table := tablewriter.NewWriter(w)
+	table.SetAutoFormatHeaders(false)
+	table.SetAlignment(tablewriter.ALIGN_LEFT)
+	table.SetBorders(tablewriter.Border{Left: true, Right: true})
+	table.SetCenterSeparator("|")
+	table.SetHeader(header)
+	table.AppendBulk(rows)
+	table.Render()
+}
+
+func parseJSON(r io.Reader) (header Header, rows Rows, err error) {
 	var vv []interface{}
 	var v interface{}
 	d := json.NewDecoder(r)

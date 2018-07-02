@@ -12,7 +12,7 @@ Drop the binary in your `$PATH` (e.g. `~/bin`) to make it easy to use.
 ## Usage
 
 Read JSON from a file:
-```
+```bash
 $ taon -c seq,name testdata/data.json
 +-----+----------+
 | seq |   name   |
@@ -33,7 +33,7 @@ $ taon -c seq,name testdata/data.json
 ```
 
 Pass JSON from cURL output:
-```
+```bash
 $ curl -s https://raw.githubusercontent.com/eiri/taon/master/testdata/array.json | taon -c seq,word,bool
 +-----+---------------------+-------+
 | seq |        word         | bool  |
@@ -53,8 +53,27 @@ $ curl -s https://raw.githubusercontent.com/eiri/taon/master/testdata/array.json
 +-----+---------------------+-------+
 ```
 
-## Help
+Print table as markdown
+```bash
+$ taon -c number,string -m testdata/data.json
+| number |      string      |
+|--------|------------------|
+| 779    | 7Xf6cUtJEOPjAbEc |
+| 700    | M2s3HKnr5zoWxAdd |
+| 310    | xZzrKV5XIL1P9y9H |
+| 742    | mfEefyltzS1lbfje |
+| 841    | X4bjUqiAUhYZvNvD |
+| 352    | ixF1I79VqoFyKFPx |
+| 852    | BYTHmkHRtI9e48K9 |
+| 818    | 6K3YjMZ7bzUrJ6kt |
+| 822    | 96M1TNPDN3WugPuZ |
+| 822    | PwbXirV2qj2vlK6g |
+| 549    | EKfWADxgJ7obe1w9 |
+| 777    | ex9esRTklAKofF8B |
 ```
+
+## Help
+```bash
 $ taon --help
 usage: taon [<flags>] [<file>]
 
@@ -64,10 +83,10 @@ Flags:
   -h, --help               Show context-sensitive help (also try --help-long and --help-man).
       --version            Show application version.
   -c, --columns=COL1,COL2  List of columns to display
+  -m, --markdown           Print as markdown table
 
 Args:
   [<file>]  File to read
-
 ```
 
 ## Licence
