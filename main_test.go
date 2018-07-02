@@ -41,11 +41,11 @@ func TestParseJSONObject(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	expectHeader := []string{"bool", "int", "string"}
+	expectHeader := Header{"bool", "int", "string"}
 	if !reflect.DeepEqual(expectHeader, header) {
 		t.Errorf("Expecting %#v, got %#v", expectHeader, header)
 	}
-	expectRows := [][]string{[]string{"true", "42", "answer"}}
+	expectRows := Rows{[]string{"true", "42", "answer"}}
 	if !reflect.DeepEqual(expectRows, rows) {
 		t.Errorf("Expecting %#v, got %#v", expectRows, rows)
 	}
@@ -62,11 +62,11 @@ func TestParseJSONArray(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	expectHeader := []string{"#", "char"}
+	expectHeader := Header{"#", "char"}
 	if !reflect.DeepEqual(expectHeader, header) {
 		t.Errorf("Expecting %#v, got %#v", expectHeader, header)
 	}
-	var expectRows [][]string
+	var expectRows Rows
 	for i, l := range "abcde" {
 		row := []string{strconv.Itoa(i + 1), string(l)}
 		expectRows = append(expectRows, row)

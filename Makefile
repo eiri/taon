@@ -33,6 +33,7 @@ format: ## format code
 .PHONY: run
 run: ## run for debug
 	@cat $(PWD)/testdata/data.json | go run main.go columns_value.go
+	@echo
 	@go run main.go columns_value.go -c seq,number,name $(PWD)/testdata/data.json
 
 .PHONY: deps

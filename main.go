@@ -15,6 +15,9 @@ import (
 // Header is an alias for slice of strings used to define headers
 type Header []string
 
+// Rows is an alias for slice of strings' slices representing table rows
+type Rows [][]string
+
 const (
 	exitOK = iota
 	exitOpenFile
@@ -63,7 +66,7 @@ func main() {
 	os.Exit(exitOK)
 }
 
-func renderTable(w io.Writer, header []string, rows [][]string) {
+func renderTable(w io.Writer, header Header, rows Rows) {
 	table := tablewriter.NewWriter(w)
 	table.SetAutoFormatHeaders(false)
 	table.SetAlignment(tablewriter.ALIGN_LEFT)
@@ -72,7 +75,7 @@ func renderTable(w io.Writer, header []string, rows [][]string) {
 	table.Render()
 }
 
-func parseJSON(r io.Reader) (header []string, rows [][]string, err error) {
+func parseJSON(r io.Reader) (header Header, rows Rows, err error) {
 	var vv []interface{}
 	var v interface{}
 	d := json.NewDecoder(r)
