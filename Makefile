@@ -34,7 +34,8 @@ format: ## format code
 run: ## run for debug
 	@cat $(PWD)/testdata/data.json | go run main.go columns_value.go
 	@echo
-	@go run main.go columns_value.go -c seq,number,name $(PWD)/testdata/data.json
+	@go run main.go columns_value.go -c seq,number,name -m $(PWD)/testdata/data.json
+	@echo
 
 .PHONY: deps
 deps: ## install deps

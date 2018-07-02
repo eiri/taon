@@ -29,6 +29,7 @@ var (
 	version = "dev"
 	columns = &ColumnsValue{}
 	file    *string
+	md      *bool
 )
 
 func main() {
@@ -43,6 +44,7 @@ func main() {
 	s := taon.Flag("columns", "List of columns to display").
 		PlaceHolder("COL1,COL2").Short('c')
 	s.SetValue((*ColumnsValue)(columns))
+	md = taon.Flag("markdown", "Print markdown table").Short('m').Bool()
 	file = taon.Arg("file", "File to read").ExistingFile()
 	taon.Parse(os.Args[1:])
 
@@ -62,7 +64,11 @@ func main() {
 		os.Exit(exitParseError)
 	}
 
-	renderTable(w, header, rows)
+	if *md {
+		renderMarkdown(w, header, rows)
+	} else {
+		renderTable(w, header, rows)
+	}
 	os.Exit(exitOK)
 }
 
@@ -70,6 +76,17 @@ func renderTable(w io.Writer, header Header, rows Rows) {
 	table := tablewriter.NewWriter(w)
 	table.SetAutoFormatHeaders(false)
 	table.SetAlignment(tablewriter.ALIGN_LEFT)
+	table.SetHeader(header)
+	table.AppendBulk(rows)
+	table.Render()
+}
+
+func renderMarkdown(w io.Writer, header Header, rows Rows) {
+	table := tablewriter.NewWriter(w)
+	table.SetAutoFormatHeaders(false)
+	table.SetAlignment(tablewriter.ALIGN_LEFT)
+	table.SetBorders(tablewriter.Border{Left: true, Right: true})
+	table.SetCenterSeparator("|")
 	table.SetHeader(header)
 	table.AppendBulk(rows)
 	table.Render()
