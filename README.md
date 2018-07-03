@@ -1,5 +1,6 @@
 # taon
 [![Build Status](https://travis-ci.com/eiri/taon.svg?branch=master)](https://travis-ci.com/eiri/taon)
+[![Go Report Card](https://goreportcard.com/badge/github.com/eiri/taon)](https://goreportcard.com/report/github.com/eiri/taon)
 
 Transform JSON into ASCII table.
 
