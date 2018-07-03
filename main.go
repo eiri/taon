@@ -8,7 +8,6 @@ import (
 	"gopkg.in/alecthomas/kingpin.v2"
 	"io"
 	"os"
-	"reflect"
 	"sort"
 )
 
@@ -93,50 +92,53 @@ func renderMarkdown(w io.Writer, header Header, rows Rows) {
 }
 
 func parseJSON(r io.Reader) (header Header, rows Rows, err error) {
-	var vv []interface{}
-	var v interface{}
+	var raw interface{}
 	d := json.NewDecoder(r)
 	d.UseNumber()
-	err = d.Decode(&v)
+	err = d.Decode(&raw)
 	if err != nil {
 		return
 	}
-	switch v := v.(type) {
+	var records []interface{}
+	switch rec := raw.(type) {
 	case []interface{}:
-		header = makeHeader(v[0])
-		vv = v
+		records = rec
 	case map[string]interface{}:
-		header = makeHeader(v)
-		vv = append(vv, v)
+		records = append(records, rec)
 	default:
 		err = errors.New("Unsupported JSON data structure")
 		return
 	}
-	if len(header) == 0 {
-		err = errors.New("Can't find specified column(s)")
-		return
-	}
 
-	for _, v := range vv {
-		// we just skip none-object rows for now
-		if v, ok := v.(map[string]interface{}); ok {
-			var row []string
-			for _, key := range header {
-				val := fmt.Sprintf("%v", v[key])
-				row = append(row, val)
-			}
-			rows = append(rows, row)
+	tableble := true
+	for _, val := range records {
+		var rec map[string]interface{}
+		if r, ok := val.(map[string]interface{}); ok && tableble {
+			rec = r
+		} else {
+			rec = map[string]interface{}{"value": val}
+			tableble = false
 		}
+		if len(header) == 0 {
+			header, err = makeHeader(rec)
+			if err != nil {
+				break
+			}
+		}
+		var row []string
+		for _, key := range header {
+			cell := fmt.Sprintf("%v", rec[key])
+			row = append(row, cell)
+		}
+		rows = append(rows, row)
 	}
 
 	return
 }
 
-func makeHeader(val interface{}) Header {
-	var header Header
-	r := reflect.ValueOf(val)
-	for _, key := range r.MapKeys() {
-		header = append(header, key.String())
+func makeHeader(m map[string]interface{}) (header Header, err error) {
+	for key := range m {
+		header = append(header, key)
 	}
 	sort.Strings(header)
 	if len(*columns) > 0 {
@@ -149,5 +151,8 @@ func makeHeader(val interface{}) Header {
 		}
 		header = tmp
 	}
-	return header
+	if len(header) == 0 {
+		err = errors.New("Can't find specified column(s)")
+	}
+	return
 }
