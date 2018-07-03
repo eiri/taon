@@ -20,10 +20,18 @@ build: ## build the binary
 test: ## run tests
 	go test -v ./...
 
+coverage.out:
+	go test -covermode=count -coverprofile=coverage.out
+
+.PHONY: cover
+cover: coverage.out ## run test coverage
+	go tool cover -html=coverage.out
+
 .PHONY: clean
 clean: ## clean up
 	go clean
 	rm -f $(NAME)
+	rm -f coverage.out
 	rm -rf release
 
 .PHONY: format
