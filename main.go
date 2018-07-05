@@ -4,18 +4,19 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/olekukonko/tablewriter"
+	tt "github.com/apcera/termtables"
 	"gopkg.in/alecthomas/kingpin.v2"
 	"io"
 	"os"
 	"sort"
+	"strconv"
 )
 
 // Header is an alias for slice of strings used to define headers
 type Header []string
 
 // Rows is an alias for slice of strings' slices representing table rows
-type Rows [][]string
+type Rows [][]interface{}
 
 const (
 	exitOK = iota
@@ -63,32 +64,29 @@ func main() {
 		os.Exit(exitParseError)
 	}
 
-	if *md {
-		renderMarkdown(w, header, rows)
-	} else {
-		renderTable(w, header, rows)
+	table := makeTable(header, rows)
+
+	_, err = fmt.Fprint(w, table)
+	if err != nil {
+		taon.Errorf("Failed to render table: %s\n", err)
+		os.Exit(exitRenderTable)
 	}
+
 	os.Exit(exitOK)
 }
 
-func renderTable(w io.Writer, header Header, rows Rows) {
-	table := tablewriter.NewWriter(w)
-	table.SetAutoFormatHeaders(false)
-	table.SetAlignment(tablewriter.ALIGN_LEFT)
-	table.SetHeader(header)
-	table.AppendBulk(rows)
-	table.Render()
-}
-
-func renderMarkdown(w io.Writer, header Header, rows Rows) {
-	table := tablewriter.NewWriter(w)
-	table.SetAutoFormatHeaders(false)
-	table.SetAlignment(tablewriter.ALIGN_LEFT)
-	table.SetBorders(tablewriter.Border{Left: true, Right: true})
-	table.SetCenterSeparator("|")
-	table.SetHeader(header)
-	table.AppendBulk(rows)
-	table.Render()
+func makeTable(header Header, rows Rows) string {
+	table := tt.CreateTable()
+	if *md {
+		table.SetModeMarkdown()
+	}
+	for _, h := range header {
+		table.AddHeaders(h)
+	}
+	for _, row := range rows {
+		table.AddRow(row...)
+	}
+	return table.Render()
 }
 
 func parseJSON(r io.Reader) (header Header, rows Rows, err error) {
@@ -125,9 +123,9 @@ func parseJSON(r io.Reader) (header Header, rows Rows, err error) {
 				break
 			}
 		}
-		var row []string
+		var row []interface{}
 		for _, key := range header {
-			cell := fmt.Sprintf("%v", rec[key])
+			cell := makeCell(rec[key])
 			row = append(row, cell)
 		}
 		rows = append(rows, row)
@@ -155,4 +153,25 @@ func makeHeader(m map[string]interface{}) (header Header, err error) {
 		err = errors.New("Can't find specified column(s)")
 	}
 	return
+}
+
+// makeCell is taken from termtable's cell.renderValue
+func makeCell(v interface{}) string {
+	switch vv := v.(type) {
+	case string:
+		return vv
+	case bool:
+		return strconv.FormatBool(vv)
+	case int:
+		return strconv.Itoa(vv)
+	case int64:
+		return strconv.FormatInt(vv, 10)
+	case uint64:
+		return strconv.FormatUint(vv, 10)
+	case float64:
+		return strconv.FormatFloat(vv, 'f', 2, 64)
+	case fmt.Stringer:
+		return vv.String()
+	}
+	return fmt.Sprintf("%v", v)
 }
