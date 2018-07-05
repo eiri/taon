@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	tt "github.com/apcera/termtables"
+	ff "github.com/jeremywohl/flatten"
 	"gopkg.in/alecthomas/kingpin.v2"
 	"io"
 	"os"
@@ -112,7 +113,10 @@ func parseJSON(r io.Reader) (header Header, rows Rows, err error) {
 	for _, val := range records {
 		var rec map[string]interface{}
 		if r, ok := val.(map[string]interface{}); ok && tableble {
-			rec = r
+			rec, err = ff.Flatten(r, "", ff.DotStyle)
+			if err != nil {
+				break
+			}
 		} else {
 			rec = map[string]interface{}{"value": val}
 			tableble = false
