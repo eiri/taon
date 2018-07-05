@@ -44,6 +44,8 @@ run: ## run for debug
 	@echo
 	@go run main.go columns_value.go $(PWD)/testdata/misc-array.json
 	@echo
+	@cat $(PWD)/testdata/all_docs.json | jq .rows | go run main.go columns_value.go -c key,doc._id,doc._rev,doc.name,doc.rank
+	@echo
 
 .PHONY: deps
 deps: ## install deps

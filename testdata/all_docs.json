@@ -1,0 +1,7 @@
+{"total_rows":5,"offset":0,"rows":[
+{"id":"2cc1d7ac5bc7c04ad046d78dd70002a9","key":"2cc1d7ac5bc7c04ad046d78dd70002a9","value":{"rev":"1-af3f285ea2127def01455c9be6abd799"},"doc":{"_id":"2cc1d7ac5bc7c04ad046d78dd70002a9","_rev":"1-af3f285ea2127def01455c9be6abd799","name":"Alice","rank":"4"}},
+{"id":"2cc1d7ac5bc7c04ad046d78dd7000553","key":"2cc1d7ac5bc7c04ad046d78dd7000553","value":{"rev":"1-edfa1a7d98452f73bd02ed0c9a8abbdf"},"doc":{"_id":"2cc1d7ac5bc7c04ad046d78dd7000553","_rev":"1-edfa1a7d98452f73bd02ed0c9a8abbdf","name":"Bob","rank":"1"}},
+{"id":"2cc1d7ac5bc7c04ad046d78dd700093a","key":"2cc1d7ac5bc7c04ad046d78dd700093a","value":{"rev":"1-ada436f7da3b789f753ee9b1e1cead36"},"doc":{"_id":"2cc1d7ac5bc7c04ad046d78dd700093a","_rev":"1-ada436f7da3b789f753ee9b1e1cead36","name":"Chuck","rank":"3"}},
+{"id":"2cc1d7ac5bc7c04ad046d78dd70017de","key":"2cc1d7ac5bc7c04ad046d78dd70017de","value":{"rev":"1-cc8bbc24a9c34aeb1f9959dd63ce0905"},"doc":{"_id":"2cc1d7ac5bc7c04ad046d78dd70017de","_rev":"1-cc8bbc24a9c34aeb1f9959dd63ce0905","name":"David","rank":"2"}},
+{"id":"2cc1d7ac5bc7c04ad046d78dd700197f","key":"2cc1d7ac5bc7c04ad046d78dd700197f","value":{"rev":"1-080d06e9a46ec6901542970247e74fa3"},"doc":{"_id":"2cc1d7ac5bc7c04ad046d78dd700197f","_rev":"1-080d06e9a46ec6901542970247e74fa3","name":"Eve","rank":"5"}}
+]}
