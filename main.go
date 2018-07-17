@@ -110,6 +110,7 @@ func parseJSON(r io.Reader) (header Header, rows Rows, err error) {
 	}
 
 	tableble := true
+	var ruler []int
 	for _, val := range records {
 		var rec map[string]interface{}
 		if r, ok := val.(map[string]interface{}); ok && tableble {
@@ -126,13 +127,50 @@ func parseJSON(r io.Reader) (header Header, rows Rows, err error) {
 			if err != nil {
 				break
 			}
+			ruler = make([]int, len(header))
 		}
 		var row []interface{}
-		for _, key := range header {
+		for i, key := range header {
 			cell := makeCell(rec[key])
 			row = append(row, cell)
+			if ruler[i] < len(key) {
+				ruler[i] = len(key)
+			}
+			if ruler[i] < len(cell) {
+				ruler[i] = len(cell)
+			}
 		}
 		rows = append(rows, row)
+	}
+
+	maxlen, margin := (tt.MaxColumns-3*len(header)-1)/len(header), 0
+	for _, r := range ruler {
+		if r < maxlen {
+			margin += maxlen - r
+		}
+	}
+
+	for i, r := range ruler {
+		if r > maxlen {
+			need := r - maxlen
+			if need > margin {
+				ruler[i] = maxlen + margin
+				margin = 0
+			} else {
+				ruler[i] = maxlen + need
+				margin -= need
+			}
+		}
+	}
+
+	for _, row := range rows {
+		for i, cell := range row {
+			ml := ruler[i]
+			c := cell.(string)
+			if len(c) > ml {
+				row[i] = c[:ml-3] + "..."
+			}
+		}
 	}
 
 	return
