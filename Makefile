@@ -46,6 +46,8 @@ run: ## run for debug
 	@echo
 	@cat $(PWD)/testdata/all_docs.json | jq .rows | go run main.go columns_value.go -c key,doc._id,doc._rev,doc.name,doc.rank
 	@echo
+	@go run main.go columns_value.go $(PWD)/testdata/long-field.json
+	@echo
 
 .PHONY: deps
 deps: ## install deps
