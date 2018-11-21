@@ -1,7 +1,4 @@
-sudo: false
-
 language: go
-
 go:
-  - 1.9.x
-  - 1.x
+  - "1.10.5"
+  - "1.11.x"
