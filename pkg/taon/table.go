@@ -8,8 +8,8 @@ import (
 	"sort"
 	"strconv"
 
-	tt "github.com/apcera/termtables"
 	ff "github.com/jeremywohl/flatten"
+	tt "github.com/scylladb/termtables"
 )
 
 // Table datastructure represents ascii table
