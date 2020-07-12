@@ -4,8 +4,8 @@
 *.swp
 
 # Binaries for programs and plugins
-taon
-release/**
+/taon
+/release/
 *.exe
 *.dll
 *.so

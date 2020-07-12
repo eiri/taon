@@ -14,7 +14,7 @@ all: deps test build ## test and build
 
 .PHONY: build
 build: ## build the binary
-	go build -ldflags "-s -w -X main.version=$(VERSION)" -o $(NAME) -v
+	go build -ldflags "-s -w -X main.version=$(VERSION)" -v ./cmd/$(NAME)/...
 
 .PHONY: test
 test: ## run tests
@@ -39,14 +39,14 @@ format: ## format code
 	go fmt -x *.go
 
 .PHONY: run
-run: ## run for debug
-	@go run main.go columns_value.go -c seq,name,bool $(PWD)/testdata/data.json
+run: build ## run for debug
+	@$(CURDIR)/$(NAME) -c seq,name,bool $(CURDIR)/pkg/taon/testdata/data.json
 	@echo
-	@go run main.go columns_value.go $(PWD)/testdata/misc-array.json
+	@$(CURDIR)/$(NAME) $(CURDIR)/pkg/taon/testdata/misc-array.json
 	@echo
-	@cat $(PWD)/testdata/all_docs.json | jq .rows | go run main.go columns_value.go -c key,doc._id,doc._rev,doc.name,doc.rank
+	@cat $(CURDIR)/pkg/taon/testdata/all_docs.json | jq .rows | $(CURDIR)/$(NAME) -c key,doc._id,doc._rev,doc.name,doc.rank
 	@echo
-	@go run main.go columns_value.go $(PWD)/testdata/long-field.json
+	@$(CURDIR)/$(NAME) $(CURDIR)/pkg/taon/testdata/long-field.json
 	@echo
 
 .PHONY: deps
