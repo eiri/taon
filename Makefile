@@ -21,7 +21,7 @@ test: ## run tests
 	go test -v ./...
 
 coverage.out:
-	go test -covermode=count -coverprofile=coverage.out
+	go test -covermode=count -coverprofile=coverage.out ./pkg/$(NAME)/...
 
 .PHONY: cover
 cover: coverage.out ## run test coverage
@@ -36,7 +36,7 @@ clean: ## clean up
 
 .PHONY: format
 format: ## format code
-	go fmt -x *.go
+	go fmt -x ./...
 
 .PHONY: run
 run: build ## run for debug
