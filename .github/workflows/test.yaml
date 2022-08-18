@@ -2,11 +2,9 @@ name: test
 
 on:
   push:
-    branches:
-    - main
+    branches: ['main']
   pull_request:
-    branches:
-    - main
+    branches: ['main']
 
 jobs:
   test:
@@ -25,10 +23,3 @@ jobs:
         cache: true
     - name: Run tests
       run: go test -v ./pkg/taon/...
-    - name: Make build
-      run: go build -ldflags "-s -w -X main.version=$VERSION" ./cmd/taon/...
-      env:
-        VERSION: v0.0.0
-    - name: Check build
-      shell: bash
-      run: "echo '{\"int\": 1, \"str\": \"one\", \"bool\": true}' | ./taon"
