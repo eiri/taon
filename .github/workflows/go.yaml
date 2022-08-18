@@ -1,20 +1,24 @@
 name: build
 on:
   push:
-    branches: [ master ]
+    branches:
+    - main
   pull_request:
-    branches: [ master ]
+    branches:
+    - main
 
 jobs:
   test:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout repo
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
     - name: Setup go
-      uses: actions/setup-go@v1
+      uses: actions/setup-go@v3
       with:
-        go-version: 1.14
+        go-version: '1.18'
+        check-latest: true
+        cache: true
     - name: Run tests
       run: go test -v ./pkg/taon/...
       env:
@@ -24,11 +28,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout repo
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
     - name: Setup go
-      uses: actions/setup-go@v1
+      uses: actions/setup-go@v3
       with:
-        go-version: 1.14
+        go-version: '1.18'
+        check-latest: true
+        cache: true
     - name: Make build
       run: go build -ldflags "-s -w -X main.version=$VERSION" ./cmd/taon/...
       env:
