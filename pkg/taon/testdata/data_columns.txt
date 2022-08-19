@@ -1,0 +1,16 @@
++-----+----------+---------------------+
+| seq | name     | word                |
++-----+----------+---------------------+
+| 1   | Donovan  | electrophototherapy |
+| 2   | Timothy  | twatterlight        |
+| 3   | Nici     | phlebograph         |
+| 4   | Nigel    | Ervipiame           |
+| 5   | Saqib    | annexational        |
+| 6   | Turkeer  | unjewel             |
+| 7   | Damone   | Anglic              |
+| 8   | Mick     | alliable            |
+| 9   | Theodore | seraphism           |
+| 10  | Hsuan    | congenialize        |
+| 11  | Ramneek  | phu                 |
+| 12  | Roderick | vial                |
++-----+----------+---------------------+
