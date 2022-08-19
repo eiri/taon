@@ -60,7 +60,7 @@ func main() {
 	var err error
 	w = os.Stdout
 
-	if flag.NArg() == 0 {
+	if flag.NArg() == 0 || flag.Arg(0) == "-" {
 		r = os.Stdin
 	} else {
 		file := flag.Arg(0)
