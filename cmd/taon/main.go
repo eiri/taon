@@ -1,12 +1,12 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"io"
 	"os"
 
 	"github.com/eiri/taon/pkg/taon"
-	"gopkg.in/alecthomas/kingpin.v2"
 )
 
 const (
@@ -18,50 +18,72 @@ const (
 
 var (
 	version = "dev"
-	columns = &taon.ColumnsValue{}
-	file    *string
-	md      *bool
+	columns taon.ColumnsValue
+	md      bool
+	showVer bool
 )
 
+func init() {
+	flag.Var(&columns, "columns", "List of columns to display")
+	flag.Var(&columns, "c", "List of columns to display")
+	flag.BoolVar(&md, "markdown", false, "Print as markdown table")
+	flag.BoolVar(&md, "m", false, "Print as markdown table")
+	flag.BoolVar(&showVer, "version", false, "Show application version")
+
+	flag.Usage = func() {
+		fmt.Fprint(os.Stderr, `Transform JSON into ASCII table
+
+Usage: taon [flags] [file]
+
+Flags:
+  -c, --columns=COL1,COL2  List of columns to display
+  -m, --markdown           Print as markdown table
+  -h, --help               Show help
+      --version            Show application version
+
+Args:
+  <file>                   Path to file to read, stdin when missing
+`)
+	}
+}
+
 func main() {
+	flag.Parse()
+
+	if showVer {
+		fmt.Printf("taon version %s\n", version)
+		os.Exit(0)
+	}
+
 	var r io.Reader
 	var w io.Writer
 	var err error
 	w = os.Stdout
 
-	app := kingpin.New("taon", "Transform JSON into ASCII table.")
-	app.Version(version)
-	app.HelpFlag.Short('h')
-	s := app.Flag("columns", "List of columns to display").
-		PlaceHolder("COL1,COL2").Short('c')
-	s.SetValue((*taon.ColumnsValue)(columns))
-	md = app.Flag("markdown", "Print as markdown table").Short('m').Bool()
-	file = app.Arg("file", "File to read").ExistingFile()
-	app.Parse(os.Args[1:])
-
-	if *file == "" {
+	if flag.NArg() == 0 {
 		r = os.Stdin
 	} else {
-		r, err = os.Open(*file)
+		file := flag.Arg(0)
+		r, err = os.Open(file)
 		if err != nil {
-			app.Errorf("Failed to open file: %s\n", err)
+			fmt.Fprintf(os.Stderr, "Failed to open file: %s\n", err)
 			os.Exit(exitOpenFile)
 		}
 	}
 
 	t := taon.NewTable()
 
-	if *md {
+	if md {
 		t.SetModeMarkdown()
 	}
 
-	if len(*columns) > 0 {
-		t.SetColumns(*columns)
+	if len(columns) > 0 {
+		t.SetColumns(columns)
 	}
 
 	table, err := t.Render(r)
 	if err != nil {
-		app.Errorf("Failed to render table: %s\n", err)
+		fmt.Fprintf(os.Stderr, "Failed to render table: %s\n", err)
 		os.Exit(exitParseError)
 	}
 

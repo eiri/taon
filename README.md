@@ -76,18 +76,18 @@ $ taon -c number,string -m testdata/data.json
 ## Help
 ```bash
 $ taon --help
-usage: taon [<flags>] [<file>]
+Transform JSON into ASCII table
 
-Transform JSON into ASCII table.
+Usage: taon [flags] [file]
 
 Flags:
-  -h, --help               Show context-sensitive help (also try --help-long and --help-man).
-      --version            Show application version.
   -c, --columns=COL1,COL2  List of columns to display
   -m, --markdown           Print as markdown table
+  -h, --help               Show help
+      --version            Show application version
 
 Args:
-  [<file>]  File to read
+  <file>                   Path to file to read, stdin when missing
 ```
 
 ## Licence
