@@ -16,5 +16,8 @@ func (c *ColumnsValue) Set(value string) error {
 }
 
 func (c *ColumnsValue) String() string {
+	if c == nil {
+		return "[]"
+	}
 	return fmt.Sprintf("[%s]", strings.Join(*c, " "))
 }
