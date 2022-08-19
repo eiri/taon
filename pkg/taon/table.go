@@ -8,7 +8,7 @@ import (
 	"sort"
 	"strconv"
 
-	ff "github.com/jeremywohl/flatten"
+	ff "github.com/jeremywohl/flatten/v2"
 	"github.com/mattn/go-tty"
 	"github.com/olekukonko/tablewriter"
 )
