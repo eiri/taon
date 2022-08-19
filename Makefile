@@ -30,6 +30,8 @@ clean:
 run: $(NAME)
 	./$(NAME) -c seq,name,bool $(CURDIR)/pkg/taon/testdata/data.json
 	@echo
+	./$(NAME) --columns seq,name,bool --markdown $(CURDIR)/pkg/taon/testdata/data.json
+	@echo
 	./$(NAME) $(CURDIR)/pkg/taon/testdata/misc-array.json
 	@echo
 	cat $(CURDIR)/pkg/taon/testdata/misc-array.json | ./$(NAME) -

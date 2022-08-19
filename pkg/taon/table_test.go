@@ -1,6 +1,7 @@
 package taon
 
 import (
+	"io/ioutil"
 	"os"
 	"reflect"
 	"strconv"
@@ -22,7 +23,7 @@ var headertests = []headertestpair{
 func TestMakeHeader(t *testing.T) {
 	in := map[string]interface{}{"b": 1, "z": 2, "a": 3, "r": 4, "o": 5}
 	for _, pair := range headertests {
-		table := NewTable()
+		table := NewTable(os.Stdin, ioutil.Discard)
 		table.SetColumns(pair.columns)
 		err := table.makeHeader(in)
 		if err != nil {
@@ -34,7 +35,7 @@ func TestMakeHeader(t *testing.T) {
 	}
 
 	// return error
-	table := NewTable()
+	table := NewTable(os.Stdin, ioutil.Discard)
 	table.SetColumns(ColumnsValue{"none"})
 	err := table.makeHeader(in)
 	if err == nil {
@@ -53,8 +54,8 @@ func TestParseJSONObject(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	table := NewTable()
-	_, err = table.Render(r)
+	table := NewTable(r, ioutil.Discard)
+	err = table.Render()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -74,9 +75,10 @@ func TestParseJSONArray(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	defer r.Close()
 
-	table := NewTable()
-	_, err = table.Render(r)
+	table := NewTable(r, ioutil.Discard)
+	err = table.Render()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -100,9 +102,10 @@ func TestParseMiscJSONArray(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	defer r.Close()
 
-	table := NewTable()
-	_, err = table.Render(r)
+	table := NewTable(r, ioutil.Discard)
+	err = table.Render()
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -7,7 +7,6 @@ import (
 	"io"
 	"sort"
 	"strconv"
-	"strings"
 
 	ff "github.com/jeremywohl/flatten"
 	"github.com/mattn/go-tty"
@@ -16,10 +15,11 @@ import (
 
 // Table datastructure represents ascii table
 type Table struct {
-	md      bool
 	columns ColumnsValue
 	header  Header
 	rows    Rows
+	reader  io.Reader
+	tw      *tablewriter.Table
 }
 
 // Header is an alias for slice of strings used to define headers
@@ -29,18 +29,31 @@ type Header []string
 type Rows [][]string
 
 // NewTable initializes and returns new Table
-func NewTable() *Table {
+func NewTable(r io.Reader, w io.Writer) *Table {
+	table := tablewriter.NewWriter(w)
+	table.SetAutoFormatHeaders(false)
+	table.SetHeaderAlignment(tablewriter.ALIGN_LEFT)
+	table.SetAutoWrapText(false)
+	table.SetAlignment(tablewriter.ALIGN_LEFT)
+
 	return &Table{
-		md:      false,
 		columns: ColumnsValue{},
 		header:  Header{},
 		rows:    Rows{},
+		reader:  r,
+		tw:      table,
 	}
 }
 
 // SetModeMarkdown to draw table as MD table
 func (t *Table) SetModeMarkdown() {
-	t.md = true
+	t.tw.SetBorders(tablewriter.Border{
+		Left:   true,
+		Top:    false,
+		Right:  true,
+		Bottom: false,
+	})
+	t.tw.SetCenterSeparator("|")
 }
 
 // SetColumns to restrict output to only given columns
@@ -49,13 +62,13 @@ func (t *Table) SetColumns(cv ColumnsValue) {
 }
 
 // Render generates ascii table
-func (t *Table) Render(r io.Reader) (string, error) {
+func (t *Table) Render() error {
 	var raw interface{}
-	d := json.NewDecoder(r)
+	d := json.NewDecoder(t.reader)
 	d.UseNumber()
 	err := d.Decode(&raw)
 	if err != nil {
-		return "", err
+		return err
 	}
 	var records []interface{}
 	switch rec := raw.(type) {
@@ -64,7 +77,7 @@ func (t *Table) Render(r io.Reader) (string, error) {
 	case map[string]interface{}:
 		records = append(records, rec)
 	default:
-		return "", errors.New("Unsupported JSON data structure")
+		return errors.New("Unsupported JSON data structure")
 	}
 
 	tableble := true
@@ -74,7 +87,7 @@ func (t *Table) Render(r io.Reader) (string, error) {
 		if r, ok := val.(map[string]interface{}); ok && tableble {
 			rec, err = ff.Flatten(r, "", ff.DotStyle)
 			if err != nil {
-				return "", err
+				return err
 			}
 		} else {
 			rec = map[string]interface{}{"value": val}
@@ -83,7 +96,7 @@ func (t *Table) Render(r io.Reader) (string, error) {
 		if len(t.header) == 0 {
 			err = t.makeHeader(rec)
 			if err != nil {
-				return "", err
+				return err
 			}
 			ruler = make([]int, len(t.header))
 		}
@@ -103,7 +116,7 @@ func (t *Table) Render(r io.Reader) (string, error) {
 
 	maxColumns, err := maxColumns()
 	if err != nil {
-		return "", err
+		return err
 	}
 	maxlen, margin := (maxColumns-3*len(t.header)-1)/len(t.header), 0
 	for _, r := range ruler {
@@ -134,22 +147,14 @@ func (t *Table) Render(r io.Reader) (string, error) {
 		}
 	}
 
-	var b strings.Builder
-	table := tablewriter.NewWriter(&b)
-	table.SetAutoFormatHeaders(false)
-	table.SetHeaderAlignment(tablewriter.ALIGN_LEFT)
-	table.SetAutoWrapText(false)
-	table.SetAlignment(tablewriter.ALIGN_LEFT)
-	table.SetHeader(t.header)
-	if t.md {
-		table.SetBorders(tablewriter.Border{Left: true, Top: false, Right: true, Bottom: false})
-		table.SetCenterSeparator("|")
-	}
-	table.AppendBulk(t.rows)
-	table.Render()
-	return b.String(), nil
+	t.tw.SetHeader(t.header)
+	t.tw.AppendBulk(t.rows)
+	t.tw.Render()
+
+	return nil
 }
 
+// makeHeader creates header list
 func (t *Table) makeHeader(m map[string]interface{}) error {
 	for key := range m {
 		t.header = append(t.header, key)
