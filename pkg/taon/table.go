@@ -93,6 +93,7 @@ func (t *Table) Render() error {
 			rec = map[string]interface{}{"value": val}
 			tableble = false
 		}
+
 		if len(t.header) == 0 {
 			err = t.makeHeader(rec)
 			if err != nil {
@@ -100,6 +101,7 @@ func (t *Table) Render() error {
 			}
 			ruler = make([]int, len(t.header))
 		}
+
 		var row []string
 		for i, key := range t.header {
 			cell := makeCell(rec[key])
@@ -156,23 +158,29 @@ func (t *Table) Render() error {
 
 // makeHeader creates header list
 func (t *Table) makeHeader(m map[string]interface{}) error {
-	for key := range m {
-		t.header = append(t.header, key)
+	if len(m) == 0 {
+		return errors.New("Record is empty")
 	}
-	sort.Strings(t.header)
+
 	if len(t.columns) > 0 {
 		var tmp []string
 		for _, key := range t.columns {
-			i := sort.SearchStrings(t.header, key)
-			if i < len(t.header) && t.header[i] == key {
+			if _, ok := m[key]; ok {
 				tmp = append(tmp, key)
 			}
 		}
+		if len(tmp) == 0 {
+			return errors.New("Can't find specified column(s)")
+		}
 		t.header = tmp
+		return nil
 	}
-	if len(t.header) == 0 {
-		return errors.New("Can't find specified column(s)")
+
+	for key := range m {
+		t.header = append(t.header, key)
 	}
+	// otherwise we can't guarantee stable columns order
+	sort.Strings(t.header)
 	return nil
 }
 

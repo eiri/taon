@@ -40,7 +40,7 @@ func TestMakeHeader(t *testing.T) {
 	if err == nil {
 		t.Error("Expecting error, got nil")
 	}
-	var expect Header
+	expect := Header{}
 	if !reflect.DeepEqual(expect, table.header) {
 		t.Errorf("Expecting %#v, got %#v", expect, table.header)
 	}
