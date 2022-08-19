@@ -13,31 +13,57 @@ Drop the binary in your `$PATH` (e.g. `~/bin`) to make it easy to use.
 ## Usage
 
 Read JSON from a file:
+
 ```bash
-$ taon -c seq,name testdata/data.json
-+-----+----------+
-| seq |   name   |
-+-----+----------+
-| 1   | Donovan  |
-| 2   | Timothy  |
-| 3   | Nici     |
-| 4   | Nigel    |
-| 5   | Saqib    |
-| 6   | Turkeer  |
-| 7   | Damone   |
-| 8   | Mick     |
-| 9   | Theodore |
-| 10  | Hsuan    |
-| 11  | Ramneek  |
-| 12  | Roderick |
-+-----+----------+
+$ taon pkg/taon/testdata/example.json
++-------+-------+--------+-----+---------------------+
+| bool  | count | number | seq | word                |
++-------+-------+--------+-----+---------------------+
+| false | 0001  | 779    | 1   | electrophototherapy |
+| true  | 0002  | 700    | 2   | twatterlight        |
+| false | 0003  | 310    | 3   | phlebograph         |
+| false | 0004  | 742    | 4   | Ervipiame           |
+| false | 0005  | 841    | 5   | annexational        |
+| true  | 0006  | 352    | 6   | unjewel             |
+| true  | 0007  | 852    | 7   | Anglic              |
+| true  | 0008  | 818    | 8   | alliable            |
+| true  | 0009  | 822    | 9   | seraphism           |
+| true  | 0010  | 822    | 10  | congenialize        |
+| false | 0011  | 549    | 11  | phu                 |
+| false | 0012  | 777    | 12  | vial                |
++-------+-------+--------+-----+---------------------+
 ```
 
-Pass JSON from cURL output:
+or from cURL output:
+
 ```bash
-$ curl -s https://raw.githubusercontent.com/eiri/taon/master/testdata/array.json | taon -c seq,word,bool
+$ curl -s https://github.com/eiri/taon/blob/main/pkg/taon/testdata/example.json | taon
++-------+-------+--------+-----+---------------------+
+| bool  | count | number | seq | word                |
++-------+-------+--------+-----+---------------------+
+| false | 0001  | 779    | 1   | electrophototherapy |
+| true  | 0002  | 700    | 2   | twatterlight        |
+| false | 0003  | 310    | 3   | phlebograph         |
+| false | 0004  | 742    | 4   | Ervipiame           |
+| false | 0005  | 841    | 5   | annexational        |
+| true  | 0006  | 352    | 6   | unjewel             |
+| true  | 0007  | 852    | 7   | Anglic              |
+| true  | 0008  | 818    | 8   | alliable            |
+| true  | 0009  | 822    | 9   | seraphism           |
+| true  | 0010  | 822    | 10  | congenialize        |
+| false | 0011  | 549    | 11  | phu                 |
+| false | 0012  | 777    | 12  | vial                |
++-------+-------+--------+-----+---------------------+
+```
+
+_Note: By default `taon` sorts columns alphabetically by name to preserve order's stability. To explicitly define order of the columns use `--columns` flag with comma separated list of the names_
+
+Filer columns to a given list in specified order:
+
+```bash
+taon -c seq,word,bool pkg/taon/testdata/example.json
 +-----+---------------------+-------+
-| seq |        word         | bool  |
+| seq | word                | bool  |
 +-----+---------------------+-------+
 | 1   | electrophototherapy | false |
 | 2   | twatterlight        | true  |
@@ -54,23 +80,24 @@ $ curl -s https://raw.githubusercontent.com/eiri/taon/master/testdata/array.json
 +-----+---------------------+-------+
 ```
 
-Print table as markdown
+Print table as markdown:
+
 ```bash
-$ taon -c number,string -m testdata/data.json
-| number |      string      |
-|--------|------------------|
-| 779    | 7Xf6cUtJEOPjAbEc |
-| 700    | M2s3HKnr5zoWxAdd |
-| 310    | xZzrKV5XIL1P9y9H |
-| 742    | mfEefyltzS1lbfje |
-| 841    | X4bjUqiAUhYZvNvD |
-| 352    | ixF1I79VqoFyKFPx |
-| 852    | BYTHmkHRtI9e48K9 |
-| 818    | 6K3YjMZ7bzUrJ6kt |
-| 822    | 96M1TNPDN3WugPuZ |
-| 822    | PwbXirV2qj2vlK6g |
-| 549    | EKfWADxgJ7obe1w9 |
-| 777    | ex9esRTklAKofF8B |
+$ taon --columns seq,word,bool --markdown pkg/taon/testdata/example.json
+| seq | word                | bool  |
+|-----|---------------------|-------|
+| 1   | electrophototherapy | false |
+| 2   | twatterlight        | true  |
+| 3   | phlebograph         | false |
+| 4   | Ervipiame           | false |
+| 5   | annexational        | false |
+| 6   | unjewel             | true  |
+| 7   | Anglic              | true  |
+| 8   | alliable            | true  |
+| 9   | seraphism           | true  |
+| 10  | congenialize        | true  |
+| 11  | phu                 | false |
+| 12  | vial                | false |
 ```
 
 ## Help
