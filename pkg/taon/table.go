@@ -141,7 +141,7 @@ func (t *Table) Render() error {
 	for _, row := range t.rows {
 		for i, cell := range row {
 			ml := ruler[i]
-			if len(cell) > ml {
+			if ml > 3 && len(cell) > ml {
 				row[i] = cell[:ml-3] + "..."
 			}
 		}
