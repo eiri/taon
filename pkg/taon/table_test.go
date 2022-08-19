@@ -62,7 +62,7 @@ func TestParseJSONObject(t *testing.T) {
 	if !reflect.DeepEqual(expectHeader, table.header) {
 		t.Errorf("Expecting %#v, got %#v", expectHeader, table.header)
 	}
-	expectRows := Rows{[]interface{}{"true", "42", "answer"}}
+	expectRows := Rows{[]string{"true", "42", "answer"}}
 	if !reflect.DeepEqual(expectRows, table.rows) {
 		t.Errorf("Expecting %#v, got %#v", expectRows, table.rows)
 	}
@@ -86,7 +86,7 @@ func TestParseJSONArray(t *testing.T) {
 	}
 	var expectRows Rows
 	for i, l := range "abcde" {
-		row := []interface{}{strconv.Itoa(i + 1), string(l)}
+		row := []string{strconv.Itoa(i + 1), string(l)}
 		expectRows = append(expectRows, row)
 	}
 	if !reflect.DeepEqual(expectRows, table.rows) {
@@ -111,13 +111,13 @@ func TestParseMiscJSONArray(t *testing.T) {
 		t.Errorf("Expecting %#v, got %#v", expectHeader, table.header)
 	}
 	expectRows := Rows{
-		[]interface{}{"309"},
-		[]interface{}{"true"},
-		[]interface{}{"zG8dnbd1iXDHAewJ"},
-		[]interface{}{"false"},
-		[]interface{}{"773"},
-		[]interface{}{"Og3TQltUz2eIW6ZF"},
-		[]interface{}{"map[note:c#]"},
+		[]string{"309"},
+		[]string{"true"},
+		[]string{"zG8dnbd1iXDHAewJ"},
+		[]string{"false"},
+		[]string{"773"},
+		[]string{"Og3TQltUz2eIW6ZF"},
+		[]string{"map[note:c#]"},
 	}
 	if !reflect.DeepEqual(expectRows, table.rows) {
 		t.Errorf("Expecting %#v, got %#v", expectRows, table.rows)
