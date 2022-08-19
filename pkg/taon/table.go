@@ -7,9 +7,11 @@ import (
 	"io"
 	"sort"
 	"strconv"
+	"strings"
 
 	ff "github.com/jeremywohl/flatten"
-	tt "github.com/scylladb/termtables"
+	"github.com/mattn/go-tty"
+	"github.com/olekukonko/tablewriter"
 )
 
 // Table datastructure represents ascii table
@@ -24,7 +26,7 @@ type Table struct {
 type Header []string
 
 // Rows is an alias for slice of strings' slices representing table rows
-type Rows [][]interface{}
+type Rows [][]string
 
 // NewTable initializes and returns new Table
 func NewTable() *Table {
@@ -85,7 +87,7 @@ func (t *Table) Render(r io.Reader) (string, error) {
 			}
 			ruler = make([]int, len(t.header))
 		}
-		var row []interface{}
+		var row []string
 		for i, key := range t.header {
 			cell := makeCell(rec[key])
 			row = append(row, cell)
@@ -99,7 +101,11 @@ func (t *Table) Render(r io.Reader) (string, error) {
 		t.rows = append(t.rows, row)
 	}
 
-	maxlen, margin := (tt.MaxColumns-3*len(t.header)-1)/len(t.header), 0
+	maxColumns, err := maxColumns()
+	if err != nil {
+		return "", err
+	}
+	maxlen, margin := (maxColumns-3*len(t.header)-1)/len(t.header), 0
 	for _, r := range ruler {
 		if r < maxlen {
 			margin += maxlen - r
@@ -122,24 +128,26 @@ func (t *Table) Render(r io.Reader) (string, error) {
 	for _, row := range t.rows {
 		for i, cell := range row {
 			ml := ruler[i]
-			c := cell.(string)
-			if len(c) > ml {
-				row[i] = c[:ml-3] + "..."
+			if len(cell) > ml {
+				row[i] = cell[:ml-3] + "..."
 			}
 		}
 	}
 
-	table := tt.CreateTable()
+	var b strings.Builder
+	table := tablewriter.NewWriter(&b)
+	table.SetAutoFormatHeaders(false)
+	table.SetHeaderAlignment(tablewriter.ALIGN_LEFT)
+	table.SetAutoWrapText(false)
+	table.SetAlignment(tablewriter.ALIGN_LEFT)
+	table.SetHeader(t.header)
 	if t.md {
-		table.SetModeMarkdown()
+		table.SetBorders(tablewriter.Border{Left: true, Top: false, Right: true, Bottom: false})
+		table.SetCenterSeparator("|")
 	}
-	for _, h := range t.header {
-		table.AddHeaders(h)
-	}
-	for _, row := range t.rows {
-		table.AddRow(row...)
-	}
-	return table.Render(), nil
+	table.AppendBulk(t.rows)
+	table.Render()
+	return b.String(), nil
 }
 
 func (t *Table) makeHeader(m map[string]interface{}) error {
@@ -163,7 +171,7 @@ func (t *Table) makeHeader(m map[string]interface{}) error {
 	return nil
 }
 
-// makeCell is taken from termtable's cell.renderValue
+// makeCell converts from typed input to string representation
 func makeCell(v interface{}) string {
 	switch vv := v.(type) {
 	case string:
@@ -182,4 +190,15 @@ func makeCell(v interface{}) string {
 		return vv.String()
 	}
 	return fmt.Sprintf("%v", v)
+}
+
+// maxColumns returns tty's width
+func maxColumns() (int, error) {
+	tty, err := tty.Open()
+	if err != nil {
+		return 0, err
+	}
+	defer tty.Close()
+	_, width, err := tty.Size()
+	return width, err
 }
