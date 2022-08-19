@@ -3,7 +3,6 @@ package main
 import (
 	"flag"
 	"fmt"
-	"io"
 	"os"
 
 	"github.com/eiri/taon/pkg/taon"
@@ -13,7 +12,6 @@ const (
 	exitOK = iota
 	exitOpenFile
 	exitParseError
-	exitRenderTable
 )
 
 var (
@@ -55,23 +53,20 @@ func main() {
 		os.Exit(0)
 	}
 
-	var r io.Reader
-	var w io.Writer
 	var err error
-	w = os.Stdout
+	reader := os.Stdin
 
-	if flag.NArg() == 0 || flag.Arg(0) == "-" {
-		r = os.Stdin
-	} else {
+	if flag.NArg() > 0 && flag.Arg(0) != "-" {
 		file := flag.Arg(0)
-		r, err = os.Open(file)
+		reader, err = os.Open(file)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Failed to open file: %s\n", err)
 			os.Exit(exitOpenFile)
 		}
+		defer reader.Close()
 	}
 
-	t := taon.NewTable()
+	t := taon.NewTable(reader, os.Stdout)
 
 	if md {
 		t.SetModeMarkdown()
@@ -81,15 +76,10 @@ func main() {
 		t.SetColumns(columns)
 	}
 
-	table, err := t.Render(r)
+	err = t.Render()
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Failed to render table: %s\n", err)
 		os.Exit(exitParseError)
-	}
-
-	_, err = fmt.Fprint(w, table)
-	if err != nil {
-		os.Exit(exitRenderTable)
 	}
 
 	os.Exit(exitOK)
