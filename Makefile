@@ -32,6 +32,8 @@ run: $(NAME)
 	@echo
 	./$(NAME) $(CURDIR)/pkg/taon/testdata/misc-array.json
 	@echo
+	cat $(CURDIR)/pkg/taon/testdata/misc-array.json | ./$(NAME) -
+	@echo
 	cat $(CURDIR)/pkg/taon/testdata/all_docs.json | jq .rows | ./$(NAME) -c key,doc._id,doc._rev,doc.name,doc.rank
 	@echo
 	./$(NAME) $(CURDIR)/pkg/taon/testdata/long-field.json
