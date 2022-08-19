@@ -15,7 +15,7 @@ import (
 
 // Table datastructure represents ascii table
 type Table struct {
-	columns ColumnsValue
+	columns Columns
 	header  Header
 	rows    Rows
 	reader  io.Reader
@@ -37,7 +37,7 @@ func NewTable(r io.Reader, w io.Writer) *Table {
 	table.SetAlignment(tablewriter.ALIGN_LEFT)
 
 	return &Table{
-		columns: ColumnsValue{},
+		columns: Columns{},
 		header:  Header{},
 		rows:    Rows{},
 		reader:  r,
@@ -57,8 +57,8 @@ func (t *Table) SetModeMarkdown() {
 }
 
 // SetColumns to restrict output to only given columns
-func (t *Table) SetColumns(cv ColumnsValue) {
-	t.columns = cv
+func (t *Table) SetColumns(c Columns) {
+	t.columns = c
 }
 
 // Render generates ascii table

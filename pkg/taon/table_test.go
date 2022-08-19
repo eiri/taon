@@ -9,14 +9,14 @@ import (
 )
 
 type headertestpair struct {
-	columns ColumnsValue
+	columns Columns
 	expect  Header
 }
 
 var headertests = []headertestpair{
-	{ColumnsValue{}, Header{"a", "b", "o", "r", "z"}},
-	{ColumnsValue{"r", "a"}, Header{"r", "a"}},
-	{ColumnsValue{"b", "x", "z", "p"}, Header{"b", "z"}},
+	{Columns{}, Header{"a", "b", "o", "r", "z"}},
+	{Columns{"r", "a"}, Header{"r", "a"}},
+	{Columns{"b", "x", "z", "p"}, Header{"b", "z"}},
 }
 
 // TestMakeHeader to ensure we are getting sorted list of strings
@@ -36,7 +36,7 @@ func TestMakeHeader(t *testing.T) {
 
 	// return error
 	table := NewTable(os.Stdin, ioutil.Discard)
-	table.SetColumns(ColumnsValue{"none"})
+	table.SetColumns(Columns{"none"})
 	err := table.makeHeader(in)
 	if err == nil {
 		t.Error("Expecting error, got nil")

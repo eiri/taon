@@ -16,7 +16,7 @@ const (
 
 var (
 	version = "dev"
-	columns taon.ColumnsValue
+	columns taon.Columns
 	md      bool
 	showVer bool
 )
