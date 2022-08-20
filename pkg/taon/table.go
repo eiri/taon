@@ -3,30 +3,18 @@ package taon
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"io"
-	"sort"
-	"strconv"
 
 	ff "github.com/jeremywohl/flatten/v2"
-	"github.com/mattn/go-tty"
 	"github.com/olekukonko/tablewriter"
 )
 
 // Table datastructure represents ascii table
 type Table struct {
 	columns Columns
-	header  Header
-	rows    Rows
 	reader  io.Reader
 	tw      *tablewriter.Table
 }
-
-// Header is an alias for slice of strings used to define headers
-type Header []string
-
-// Rows is an alias for slice of strings' slices representing table rows
-type Rows [][]string
 
 // NewTable initializes and returns new Table
 func NewTable(r io.Reader, w io.Writer) *Table {
@@ -38,8 +26,6 @@ func NewTable(r io.Reader, w io.Writer) *Table {
 
 	return &Table{
 		columns: Columns{},
-		header:  Header{},
-		rows:    Rows{},
 		reader:  r,
 		tw:      table,
 	}
@@ -80,138 +66,79 @@ func (t *Table) Render() error {
 		return errors.New("Unsupported JSON data structure")
 	}
 
-	tableble := true
-	var ruler []int
+	columns := make(map[string]int)
+	rows := make([]map[string]string, 0)
 	for _, val := range records {
-		var rec map[string]interface{}
-		if r, ok := val.(map[string]interface{}); ok && tableble {
-			rec, err = ff.Flatten(r, "", ff.DotStyle)
-			if err != nil {
-				return err
-			}
-		} else {
-			rec = map[string]interface{}{"value": val}
-			tableble = false
+		r, ok := val.(map[string]interface{})
+		if !ok {
+			return errors.New("Unsupported JSON data structure")
 		}
 
-		if len(t.header) == 0 {
-			err = t.makeHeader(rec)
-			if err != nil {
-				return err
-			}
-			ruler = make([]int, len(t.header))
+		rec, err := ff.Flatten(r, "", ff.DotStyle)
+		if err != nil {
+			return err
 		}
 
-		var row []string
-		for i, key := range t.header {
-			cell := makeCell(rec[key])
-			row = append(row, cell)
-			if ruler[i] < len(key) {
-				ruler[i] = len(key)
+		row := make(map[string]string)
+		for key, value := range rec {
+			if _, ok := columns[key]; !ok {
+				columns[key] = 0
 			}
-			if ruler[i] < len(cell) {
-				ruler[i] = len(cell)
-			}
+			row[key] = makeCell(value)
+			columns[key] = max(columns[key], len(key), len(row[key]))
 		}
-		t.rows = append(t.rows, row)
+		rows = append(rows, row)
 	}
 
+	header, err := makeHeader(columns, t.columns)
+	if err != nil {
+		return err
+	}
+	t.tw.SetHeader(header)
+
+	// calc length of each column
 	maxColumns, err := maxColumns()
 	if err != nil {
 		return err
 	}
-	maxlen, margin := (maxColumns-3*len(t.header)-1)/len(t.header), 0
-	for _, r := range ruler {
-		if r < maxlen {
-			margin += maxlen - r
+	maxlen := (maxColumns - 3*len(header) - 1) / len(header)
+	// margin is a global length cols can grow to in place of short columns
+	margin := 0
+	for _, l := range columns {
+		if l < maxlen {
+			margin += maxlen - l
 		}
 	}
 
-	for i, r := range ruler {
-		if r > maxlen {
-			need := r - maxlen
+	for _, k := range header {
+		l := columns[k]
+		if l > maxlen {
+			need := l - maxlen
+			// give all margin to this column
 			if need > margin {
-				ruler[i] = maxlen + margin
+				columns[k] = maxlen + margin
 				margin = 0
 			} else {
-				ruler[i] = maxlen + need
+				columns[k] = maxlen + need
 				margin -= need
 			}
 		}
 	}
 
-	for _, row := range t.rows {
-		for i, cell := range row {
-			ml := ruler[i]
-			if ml > 3 && len(cell) > ml {
-				row[i] = cell[:ml-3] + "..."
+	// build rows, cut cells to each col width
+	for _, row := range rows {
+		r := make([]string, 0)
+		for _, key := range header {
+			l := columns[key]
+			if l > 3 && len(row[key]) > l {
+				row[key] = row[key][:l-3] + "..."
 			}
+			r = append(r, row[key])
 		}
+		t.tw.Append(r)
 	}
 
-	t.tw.SetHeader(t.header)
-	t.tw.AppendBulk(t.rows)
 	t.tw.Render()
 
 	return nil
-}
-
-// makeHeader creates header list
-func (t *Table) makeHeader(m map[string]interface{}) error {
-	if len(m) == 0 {
-		return errors.New("Record is empty")
-	}
-
-	if len(t.columns) > 0 {
-		var tmp []string
-		for _, key := range t.columns {
-			if _, ok := m[key]; ok {
-				tmp = append(tmp, key)
-			}
-		}
-		if len(tmp) == 0 {
-			return errors.New("Can't find specified column(s)")
-		}
-		t.header = tmp
-		return nil
-	}
-
-	for key := range m {
-		t.header = append(t.header, key)
-	}
-	// otherwise we can't guarantee stable columns order
-	sort.Strings(t.header)
-	return nil
-}
-
-// makeCell converts from typed input to string representation
-func makeCell(v interface{}) string {
-	switch vv := v.(type) {
-	case string:
-		return vv
-	case bool:
-		return strconv.FormatBool(vv)
-	case int:
-		return strconv.Itoa(vv)
-	case int64:
-		return strconv.FormatInt(vv, 10)
-	case uint64:
-		return strconv.FormatUint(vv, 10)
-	case float64:
-		return strconv.FormatFloat(vv, 'f', 2, 64)
-	case fmt.Stringer:
-		return vv.String()
-	}
-	return fmt.Sprintf("%v", v)
-}
-
-// maxColumns returns tty's width
-func maxColumns() (int, error) {
-	tty, err := tty.Open()
-	if err != nil {
-		return 0, err
-	}
-	defer tty.Close()
-	_, width, err := tty.Size()
-	return width, err
 }
