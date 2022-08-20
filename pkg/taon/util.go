@@ -3,6 +3,7 @@ package taon
 import (
 	"errors"
 	"fmt"
+	"os"
 	"sort"
 	"strconv"
 
@@ -75,6 +76,11 @@ func max(m, b, c int) int {
 
 // maxColumns returns tty's width
 func maxColumns() (int, error) {
+	// prefer env $COLUMNS, fail back on tty if not set
+	if columns := os.Getenv("COLUMNS"); columns != "" {
+		return strconv.Atoi(columns)
+	}
+
 	tty, err := tty.Open()
 	if err != nil {
 		return 0, err
