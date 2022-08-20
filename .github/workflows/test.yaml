@@ -23,3 +23,5 @@ jobs:
         cache: true
     - name: Run tests
       run: go test -v ./pkg/taon/...
+      env:
+        COLUMNS: 158
