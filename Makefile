@@ -31,7 +31,7 @@ run: $(NAME)
 	cat $(CURDIR)/pkg/taon/testdata/all_docs.json | jq .rows | ./$(NAME) -c key,doc._id,doc._rev,doc.name,doc.rank
 
 .PHONY: fixtures
-fixtures: fixture_names=array data data_deep long_field misc_array object
+fixtures: fixture_names=array data data_deep long_field object
 fixtures: $(NAME)
 	$(foreach n,$(fixture_names),./$(NAME) ./pkg/taon/testdata/$(n).json > ./pkg/taon/testdata/$(n).txt;)
 	$(foreach n,$(fixture_names),./$(NAME) --markdown ./pkg/taon/testdata/$(n).json > ./pkg/taon/testdata/$(n).md;)

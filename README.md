@@ -12,6 +12,8 @@ Drop the binary in your `$PATH` (e.g. `~/bin`) to make it easy to use.
 
 ## Usage
 
+### Reading
+
 Read JSON from a file:
 
 ```bash
@@ -34,7 +36,7 @@ $ taon pkg/taon/testdata/example.json
 +-------+-------+--------+-----+---------------------+
 ```
 
-or from cURL output:
+or from the cURL output:
 
 ```bash
 $ curl -s https://github.com/eiri/taon/blob/main/pkg/taon/testdata/example.json | taon
@@ -56,9 +58,11 @@ $ curl -s https://github.com/eiri/taon/blob/main/pkg/taon/testdata/example.json 
 +-------+-------+--------+-----+---------------------+
 ```
 
-_Note: By default `taon` sorts columns alphabetically by name to preserve order's stability. To explicitly define order of the columns use `--columns` flag with comma separated list of the names_
+_Note: By default `taon` sorts columns alphabetically by a name to preserve order's stability. To explicitly define the order of the columns use `--columns` flag with comma separated list of the names_
 
-Filer columns to a given list in specified order:
+### Filtering
+
+Filter columns to a given list in the specified order:
 
 ```bash
 taon -c seq,word,bool pkg/taon/testdata/example.json
@@ -80,7 +84,9 @@ taon -c seq,word,bool pkg/taon/testdata/example.json
 +-----+---------------------+-------+
 ```
 
-Print table as markdown:
+### Markdown
+
+Print a table as markdown:
 
 ```bash
 $ taon --columns seq,word,bool --markdown pkg/taon/testdata/example.json
@@ -100,7 +106,12 @@ $ taon --columns seq,word,bool --markdown pkg/taon/testdata/example.json
 | 12  | vial                | false |
 ```
 
+### Limitations
+
+`taon` only works with objects or arrays of objects, passing in an array of arbitrary data will return an error.
+
 ## Help
+
 ```bash
 $ taon --help
 Transform JSON into ASCII table
