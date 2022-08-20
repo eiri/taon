@@ -66,6 +66,12 @@ func (t *Table) Render() error {
 		return errors.New("Unsupported JSON data structure")
 	}
 
+	lookup := make(map[string]bool)
+	if len(t.columns) > 0 {
+		for _, k := range t.columns {
+			lookup[k] = true
+		}
+	}
 	columns := make(map[string]int)
 	rows := make([]map[string]string, 0)
 	for _, val := range records {
@@ -81,6 +87,10 @@ func (t *Table) Render() error {
 
 		row := make(map[string]string)
 		for key, value := range rec {
+			_, ok := lookup[key]
+			if !ok && len(lookup) > 0 {
+				continue
+			}
 			if _, ok := columns[key]; !ok {
 				columns[key] = 0
 			}
