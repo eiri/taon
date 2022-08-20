@@ -1,10 +1,10 @@
 package taon
 
 import (
-	"encoding/json"
 	"errors"
 	"io"
 
+	"github.com/goccy/go-json"
 	ff "github.com/jeremywohl/flatten/v2"
 	"github.com/olekukonko/tablewriter"
 )
