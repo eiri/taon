@@ -51,8 +51,8 @@ brews:
     commit_author:
       name: eiri
       email: eiri@eiri.ca
-    commit_msg_template: "Brew formula update for {{ .ProjectName }} version {{ .Tag }}"
+    commit_msg_template: "feat: brew formula update for {{ .ProjectName }} version {{ .Tag }}"
     folder: Formula
     homepage: "https://github.com/eiri/taon"
-    description: "Transform JSON into ASCII table."
+    description: "Transform JSON into ASCII table"
     license: "MIT"

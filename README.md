@@ -6,9 +6,15 @@ Transform JSON into ASCII table.
 
 ## Installation
 
-`taon` is a stand-alone cli utility. You can just [download a binary](https://github.com/eiri/taon/releases) and run it.
+### MacOS
 
-Drop the binary in your `$PATH` (e.g. `~/bin`) to make it easy to use.
+Install using [Homebrew](https://brew.sh/).
+
+Tap `eiri/tap` with `brew tap eiri/tap` and then run `brew install taon` or just run `brew install eiri/tap/taon`. To update run `brew update` and then `brew upgrade taon`.
+
+### Linux and Windows
+
+Since `taon` is just a single binary [download the latest release](https://github.com/eiri/taon/releases) and place it in your `$PATH`.
 
 ## Usage
 
