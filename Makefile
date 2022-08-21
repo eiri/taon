@@ -1,12 +1,12 @@
 .DEFAULT_GOAL := test
 NAME := taon
-SRC := $(wildcard ./cmd/$(NAME)/*.go ./pkg/$(NAME)/*.go)
+SRC := $(wildcard *.go ./pkg/$(NAME)/*.go)
 
 .PHONY: build
 build: $(NAME)
 
 $(NAME): $(SRC)
-	go build -o $(NAME) ./cmd/$(NAME)/...
+	go build -o $(NAME) main.go
 
 .PHONY: test
 test:
