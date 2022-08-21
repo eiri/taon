@@ -25,10 +25,10 @@ jobs:
         check-latest: true
         cache: true
     - name: Build release
-      uses: goreleaser/goreleaser-action@v2
+      uses: goreleaser/goreleaser-action@v3
       with:
         distribution: goreleaser
         version: latest
         args: release --rm-dist
       env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GITHUB_TOKEN: ${{ secrets.GH_HOMEBREW_PAT }}
