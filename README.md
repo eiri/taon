@@ -14,7 +14,7 @@ Drop the binary in your `$PATH` (e.g. `~/bin`) to make it easy to use.
 
 ### Reading
 
-Read JSON from a file:
+Read a JSON array from a file:
 
 ```bash
 $ taon pkg/taon/testdata/example.json
@@ -36,7 +36,7 @@ $ taon pkg/taon/testdata/example.json
 +-------+-------+--------+-----+---------------------+
 ```
 
-or from the cURL output:
+or from a cURL output:
 
 ```bash
 $ curl -s https://github.com/eiri/taon/blob/main/pkg/taon/testdata/example.json | taon
@@ -60,12 +60,31 @@ $ curl -s https://github.com/eiri/taon/blob/main/pkg/taon/testdata/example.json 
 
 _Note: By default `taon` sorts columns alphabetically by a name to preserve order's stability. To explicitly define the order of the columns use `--columns` flag with comma separated list of the names_
 
+### Reading JSON objects
+
+For objects `taon` builds a table with `keys` and `values` columns, instead of trying to present each object's key as a column.
+
+Rows are sorted by key or printed in the order defined with `--columns` flag, same as the columns when reading JSON arrays.
+
+```bash
+$ jq '.[0]' pkg/taon/testdata/example.json | taon
++--------+---------------------+
+| keys   | values              |
++--------+---------------------+
+| bool   | false               |
+| count  | 0001                |
+| number | 779                 |
+| seq    | 1                   |
+| word   | electrophototherapy |
++--------+---------------------+
+```
+
 ### Filtering
 
 Filter columns to a given list in the specified order:
 
 ```bash
-taon -c seq,word,bool pkg/taon/testdata/example.json
+$ taon -c seq,word,bool pkg/taon/testdata/example.json
 +-----+---------------------+-------+
 | seq | word                | bool  |
 +-----+---------------------+-------+
@@ -82,6 +101,15 @@ taon -c seq,word,bool pkg/taon/testdata/example.json
 | 11  | phu                 | false |
 | 12  | vial                | false |
 +-----+---------------------+-------+
+
+$ jq '.[0]' pkg/taon/testdata/example.json | taon -c seq,word,bool
++------+---------------------+
+| keys | values              |
++------+---------------------+
+| seq  | 1                   |
+| word | electrophototherapy |
+| bool | false               |
++------+---------------------+
 ```
 
 ### Markdown
@@ -104,6 +132,13 @@ $ taon --columns seq,word,bool --markdown pkg/taon/testdata/example.json
 | 10  | congenialize        | true  |
 | 11  | phu                 | false |
 | 12  | vial                | false |
+
+$ jq '.[0]' pkg/taon/testdata/example.json | taon --columns seq,word,bool --markdown
+| keys | values              |
+|------|---------------------|
+| seq  | 1                   |
+| word | electrophototherapy |
+| bool | false               |
 ```
 
 ### Limitations

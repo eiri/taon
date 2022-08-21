@@ -64,12 +64,12 @@ func makeCell(v interface{}) string {
 	return fmt.Sprintf("%v", v)
 }
 
-func max(m, b, c int) int {
-	if m < b {
-		m = b
-	}
-	if m < c {
-		m = c
+func max(ints ...int) int {
+	m := ints[0]
+	for i := range ints {
+		if ints[i] > m {
+			m = ints[i]
+		}
 	}
 	return m
 }

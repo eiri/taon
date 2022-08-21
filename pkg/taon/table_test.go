@@ -7,7 +7,7 @@ import (
 	"testing"
 )
 
-var names = []string{"array", "data", "data_deep", "long_field", "object"}
+var names = []string{"array", "data", "data_deep", "data_object", "long_field", "object"}
 
 // TestRender to confirm that our output is formatted as table
 func TestRender(t *testing.T) {
@@ -71,6 +71,7 @@ var table_columns_tests = []struct {
 }{
 	{"data", Columns{"seq", "name", "word"}},
 	{"data_deep", Columns{"key", "value.rev", "doc.name"}},
+	{"data_object", Columns{"key", "value.rev", "doc.name"}},
 }
 
 // TestRenderColumns to confirm that our output table has reduced columns
