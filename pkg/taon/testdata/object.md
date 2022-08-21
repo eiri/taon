@@ -1,3 +1,5 @@
-| bool | int | string |
-|------|-----|--------|
-| true | 42  | answer |
+| keys   | values |
+|--------|--------|
+| bool   | true   |
+| int    | 42     |
+| string | answer |

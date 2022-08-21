@@ -1,0 +1,9 @@
+| keys      | values                             |
+|-----------|------------------------------------|
+| doc._id   | 2cc1d7ac5bc7c04ad046d78dd70002a9   |
+| doc._rev  | 1-af3f285ea2127def01455c9be6abd799 |
+| doc.name  | Alice                              |
+| doc.rank  | 4                                  |
+| id        | 2cc1d7ac5bc7c04ad046d78dd70002a9   |
+| key       | 2cc1d7ac5bc7c04ad046d78dd70002a9   |
+| value.rev | 1-af3f285ea2127def01455c9be6abd799 |
