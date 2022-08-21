@@ -9,7 +9,6 @@ builds:
       - linux
       - windows
       - darwin
-    main: ./cmd/taon
 archives:
   - replacements:
       darwin: Darwin

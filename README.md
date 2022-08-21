@@ -1,8 +1,9 @@
 # taon
 [![CI Status](https://github.com/eiri/taon/actions/workflows/test.yaml/badge.svg)](https://github.com/eiri/taon/actions/workflows/test.yaml)
 [![Go Report Card](https://goreportcard.com/badge/github.com/eiri/taon)](https://goreportcard.com/report/github.com/eiri/taon)
+[![release](https://img.shields.io/github/release/eiri/taon/all.svg)](https://github.com/eiri/taon/releases)
 
-Transform JSON into ASCII table.
+Transform JSON into ASCII table
 
 ## Installation
 
@@ -15,6 +16,10 @@ Tap `eiri/tap` with `brew tap eiri/tap` and then run `brew install taon` or just
 ### Linux and Windows
 
 Since `taon` is just a single binary [download the latest release](https://github.com/eiri/taon/releases) and place it in your `$PATH`.
+
+### Build from source
+
+`go install github.com/eiri/taon@latest`
 
 ## Usage
 
