@@ -1,5 +1,5 @@
 # taon
-[![CI Status](https://github.com/eiri/taon/actions/workflows/test.yaml/badge.svg)](https://github.com/eiri/taon/actions/workflows/test.yaml)
+[![CI Status](https://github.com/eiri/taon/actions/workflows/ci.yaml/badge.svg)](https://github.com/eiri/taon/actions/workflows/ci.yaml)
 [![Go Report Card](https://goreportcard.com/badge/github.com/eiri/taon)](https://goreportcard.com/report/github.com/eiri/taon)
 [![release](https://img.shields.io/github/release/eiri/taon/all.svg)](https://github.com/eiri/taon/releases)
 
