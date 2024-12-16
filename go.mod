@@ -3,7 +3,7 @@ module github.com/eiri/taon
 go 1.18
 
 require (
-	github.com/goccy/go-json v0.10.3
+	github.com/goccy/go-json v0.10.4
 	github.com/jeremywohl/flatten/v2 v2.0.0-20211013061545-07e4a09fb8e4
 	github.com/mattn/go-tty v0.0.7
 	github.com/olekukonko/tablewriter v0.0.5
