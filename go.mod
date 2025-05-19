@@ -1,6 +1,6 @@
 module github.com/eiri/taon
 
-go 1.18
+go 1.24
 
 require (
 	github.com/goccy/go-json v0.10.5
