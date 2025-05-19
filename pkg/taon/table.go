@@ -2,50 +2,39 @@ package taon
 
 import (
 	"errors"
+	"fmt"
 	"io"
+	"maps"
+	"slices"
 	"sort"
 
 	"github.com/goccy/go-json"
-	ff "github.com/jeremywohl/flatten/v2"
 	"github.com/olekukonko/tablewriter"
 )
 
 const (
-	keysTitle   = "keys"
-	valuesTitle = "values"
+	titleKeys = "keys"
+	titleVals = "values"
 )
 
 // Table datastructure represents ascii table
 type Table struct {
-	columns Columns
-	reader  io.Reader
-	tw      *tablewriter.Table
+	columns    Columns // FIXME! gibve me a better name
+	isMarkdown bool
+	headers    []string
+	rows       [][]string
 }
 
 // NewTable initializes and returns new Table
-func NewTable(r io.Reader, w io.Writer) *Table {
-	table := tablewriter.NewWriter(w)
-	table.SetAutoFormatHeaders(false)
-	table.SetHeaderAlignment(tablewriter.ALIGN_LEFT)
-	table.SetAutoWrapText(false)
-	table.SetAlignment(tablewriter.ALIGN_LEFT)
-
+func NewTable() *Table {
 	return &Table{
 		columns: Columns{},
-		reader:  r,
-		tw:      table,
 	}
 }
 
 // SetModeMarkdown to draw table as MD table
 func (t *Table) SetModeMarkdown() {
-	t.tw.SetBorders(tablewriter.Border{
-		Left:   true,
-		Top:    false,
-		Right:  true,
-		Bottom: false,
-	})
-	t.tw.SetCenterSeparator("|")
+	t.isMarkdown = true
 }
 
 // SetColumns to restrict output to only given columns
@@ -54,33 +43,119 @@ func (t *Table) SetColumns(c Columns) {
 }
 
 // Render generates ascii table
-func (t *Table) Render() error {
-	var raw interface{}
-	d := json.NewDecoder(t.reader)
-	d.UseNumber()
-	err := d.Decode(&raw)
+func (t *Table) Render(r io.Reader, w io.Writer) error {
+	decoder := json.NewDecoder(r)
+	decoder.UseNumber()
+
+	token, err := decoder.Token()
 	if err != nil {
-		return err
-	}
-	switch records := raw.(type) {
-	case []interface{}:
-		return t.renderArray(records)
-	case map[string]interface{}:
-		return t.renderObject(records)
+		return fmt.Errorf("error reading token: %w", err)
 	}
 
-	return errors.New("Unsupported JSON data structure")
+	switch delim := token.(type) {
+	case json.Delim:
+		switch delim {
+		case '{':
+			// It's an object
+			obj, err := parseObject(decoder)
+			if err != nil {
+				return err
+			}
+
+			t.buildObject(obj)
+		case '[':
+			// It's an array
+			list := make([]any, 0)
+
+			for decoder.More() {
+				// Read the opening '{'
+				if _, err := decoder.Token(); err != nil {
+					return fmt.Errorf("error reading opening token: %w", err)
+				}
+				item, err := parseObject(decoder)
+				if err != nil {
+					return err
+				}
+
+				list = append(list, item)
+			}
+
+			// Consume the closing ']'
+			if _, err := decoder.Token(); err != nil && err != io.EOF {
+				return fmt.Errorf("error reading closing token: %w", err)
+			}
+
+			t.buildArray(list)
+		default:
+			return fmt.Errorf("unexpected delimiter: %q", delim)
+		}
+	default:
+		return fmt.Errorf("unexpected token (expected '{' or '['): %q", token)
+	}
+
+	table := tablewriter.NewWriter(w)
+	table.SetAutoFormatHeaders(false)
+	table.SetHeaderAlignment(tablewriter.ALIGN_LEFT)
+	table.SetAutoWrapText(false)
+	table.SetAlignment(tablewriter.ALIGN_LEFT)
+
+	if t.isMarkdown {
+		table.SetBorders(tablewriter.Border{
+			Left:   true,
+			Top:    false,
+			Right:  true,
+			Bottom: false,
+		})
+		table.SetCenterSeparator("|")
+	}
+
+	table.SetHeader(t.headers)
+	for _, row := range t.rows {
+		table.Append(row)
+	}
+	table.Render()
+
+	return nil
+}
+
+func parseObject(d *json.Decoder) (map[string]string, error) {
+	obj := make(map[string]string)
+
+	for d.More() {
+		keyToken, err := d.Token()
+		if err != nil {
+			return nil, fmt.Errorf("error reading key token: %w", err)
+		}
+		key, ok := keyToken.(string)
+		if !ok {
+			return nil, fmt.Errorf("expected string key, got: %q", keyToken)
+		}
+
+		var val any
+		if err := d.Decode(&val); err != nil {
+			return nil, fmt.Errorf("error decoding value: %w", err)
+
+		}
+		flat := make(map[string]any)
+		flatten(key, val, flat)
+		for k, v := range flat {
+			obj[k] = makeCell(v)
+		}
+	}
+
+	// Read the closing '}'
+	if _, err := d.Token(); err != nil {
+		return nil, fmt.Errorf("error reading closing token: %w", err)
+	}
+
+	return obj, nil
 }
 
 // renderObject generates ascii table for object data
-func (t *Table) renderObject(records map[string]interface{}) error {
-	flatten, err := ff.Flatten(records, "", ff.DotStyle)
-	if err != nil {
-		return err
-	}
+func (t *Table) buildObject(records map[string]string) error {
 	keys := t.columns
 	if len(keys) == 0 {
-		for key := range flatten {
+		for key := range records {
 			keys = append(keys, key)
 		}
 		// otherwise we can't guarantee stable rows order
@@ -93,143 +168,94 @@ func (t *Table) renderObject(records map[string]interface{}) error {
 			lookup[k] = true
 		}
 	}
-	columns := map[string]int{keysTitle: 0, valuesTitle: 0}
+
+	columns := []int{len(titleKeys), len(titleVals)}
 	rows := make([][]string, 0)
 	for _, key := range keys {
-		_, ok := lookup[key]
-		if !ok && len(lookup) > 0 {
-			continue
+		if len(lookup) > 0 {
+			if _, ok := lookup[key]; !ok {
+				continue
+			}
 		}
-		value := flatten[key]
+		value := records[key]
 
-		keyCell := makeCell(key)
-		columns[keysTitle] = max(columns[keysTitle], len(keyCell))
-
-		valueCell := makeCell(value)
-		columns[valuesTitle] = max(columns[valuesTitle], len(valueCell))
-
-		rows = append(rows, []string{keyCell, valueCell})
+		columns[0] = max(columns[0], len(key))
+		columns[1] = max(columns[1], len(value))
+		rows = append(rows, []string{key, value})
 	}
 
-	header := []string{keysTitle, valuesTitle}
-	t.tw.SetHeader(header)
+	allocated := AllocateColumnWidths(columns)
 
-	columns, err = calcColumnsWidth(columns, header)
-	if err != nil {
-		return err
+	for id, row := range rows {
+		for idx, v := range row {
+			vl := allocated[idx]
+			if vl > 3 && len(v) > vl {
+				rows[id][idx] = v[:vl-3] + "..."
+			}
+		}
 	}
 
-	// build rows, cut cells to each col width
-	for _, row := range rows {
-		k, v := row[0], row[1]
-		kl, vl := columns[keysTitle], columns[valuesTitle]
-		if kl > 3 && len(k) > kl {
-			row[0] = k[:kl-3] + "..."
-		}
-		if vl > 3 && len(v) > vl {
-			row[1] = v[:vl-3] + "..."
-		}
-		t.tw.Append(row)
-	}
-
-	t.tw.Render()
+	t.headers = []string{titleKeys, titleVals}
+	t.rows = rows
 
 	return nil
 }
 
-// renderArray generates ascii table for array data
-func (t *Table) renderArray(records []interface{}) error {
-	lookup := make(map[string]bool)
+// buildArray converts array of values into table struct
+func (t *Table) buildArray(records []any) error {
+	// init headers
+	headers := make([]string, 0)
 	if len(t.columns) > 0 {
-		for _, k := range t.columns {
-			lookup[k] = true
-		}
-	}
-	columns := make(map[string]int)
-	rows := make([]map[string]string, 0)
-	for _, val := range records {
-		r, ok := val.(map[string]interface{})
+		headers = t.columns
+	} else {
+		first, ok := records[0].(map[string]string)
 		if !ok {
-			return errors.New("Unsupported JSON data structure")
+			return errors.New("unsupported JSON data structure")
 		}
 
-		rec, err := ff.Flatten(r, "", ff.DotStyle)
-		if err != nil {
-			return err
+		for key := range maps.Keys(first) {
+			headers = append(headers, key)
+		}
+		sort.Strings(headers)
+	}
+
+	// init columns
+	columns := make([]int, len(headers))
+	for idx, key := range headers {
+		columns[idx] = len(key)
+	}
+
+	rows := make([][]string, 0)
+	for _, val := range records {
+		record, ok := val.(map[string]string)
+		if !ok {
+			return errors.New("unsupported JSON data structure")
 		}
 
-		row := make(map[string]string)
-		for key, value := range rec {
-			_, ok := lookup[key]
-			if !ok && len(lookup) > 0 {
-				continue
+		row := make([]string, len(headers))
+		for key, value := range record {
+			idx := slices.Index(headers, key)
+			if idx > -1 {
+				columns[idx] = max(columns[idx], len(value))
+				row[idx] = value
 			}
-			if _, ok := columns[key]; !ok {
-				columns[key] = 0
-			}
-			row[key] = makeCell(value)
-			columns[key] = max(columns[key], len(key), len(row[key]))
 		}
 		rows = append(rows, row)
 	}
 
-	header, err := makeHeader(columns, t.columns)
-	if err != nil {
-		return err
-	}
-	t.tw.SetHeader(header)
+	allocated := AllocateColumnWidths(columns)
 
-	columns, err = calcColumnsWidth(columns, header)
-	if err != nil {
-		return err
-	}
-
-	// build rows, cut cells to each col width
-	for _, row := range rows {
-		r := make([]string, 0)
-		for _, key := range header {
-			l := columns[key]
-			if l > 3 && len(row[key]) > l {
-				row[key] = row[key][:l-3] + "..."
+	for id, row := range rows {
+		for idx, v := range row {
+			vl := allocated[idx]
+			if vl > 3 && len(v) > vl {
+				rows[id][idx] = v[:vl-3] + "..."
 			}
-			r = append(r, row[key])
 		}
-		t.tw.Append(r)
 	}
 
-	t.tw.Render()
+	t.headers = headers
+	t.rows = rows
 
 	return nil
-}
-
-func calcColumnsWidth(columns map[string]int, header Header) (map[string]int, error) {
-	// calc length of each column
-	maxColumns, err := maxColumns()
-	if err != nil {
-		return columns, err
-	}
-	// margin is a global length cols can grow to in place of short columns
-	maxlen, margin := (maxColumns-3*len(header)-1)/len(header), 0
-	for _, l := range columns {
-		if l < maxlen {
-			margin += maxlen - l
-		}
-	}
-
-	for _, k := range header {
-		l := columns[k]
-		if l > maxlen {
-			need := l - maxlen
-			// give all margin to this column
-			if need > margin {
-				columns[k] = maxlen + margin
-				margin = 0
-			} else {
-				columns[k] = maxlen + need
-				margin -= need
-			}
-		}
-	}
-
-	return columns, nil
 }

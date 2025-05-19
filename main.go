@@ -66,7 +66,7 @@ func main() {
 		defer reader.Close()
 	}
 
-	t := taon.NewTable(reader, os.Stdout)
+	t := taon.NewTable()
 
 	if md {
 		t.SetModeMarkdown()
@@ -76,7 +76,7 @@ func main() {
 		t.SetColumns(columns)
 	}
 
-	err = t.Render()
+	err = t.Render(reader, os.Stdout)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Failed to render table: %s\n", err)
 		os.Exit(exitParseError)
