@@ -44,4 +44,4 @@ fixtures: $(NAME)
 .PHONY: release
 release:
 	goreleaser check
-	goreleaser build --snapshot --rm-dist
+	goreleaser build --snapshot --clean
