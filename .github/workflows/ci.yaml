@@ -2,25 +2,28 @@ name: CI
 
 on:
   push:
-    branches: ['main']
+    branches: ["main"]
   pull_request:
+
+permissions:
+  contents: read
 
 jobs:
   test:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        go: ['1.18', '1.19', '1.20']
+        go: ["1.23", "1.24"]
     steps:
-    - name: Checkout repo
-      uses: actions/checkout@v3
-    - name: Setup go ${{ matrix.go }}
-      uses: actions/setup-go@v3
-      with:
-        go-version: ${{ matrix.go }}
-        check-latest: true
-        cache: true
-    - name: Run tests
-      run: go test -v ./pkg/taon/...
-      env:
-        COLUMNS: 158
+      - name: Checkout repo
+        uses: actions/checkout@v4
+      - name: Setup go ${{ matrix.go }}
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ matrix.go }}
+          check-latest: true
+          cache: true
+      - name: Run tests
+        run: go test -v ./pkg/taon/...
+        env:
+          COLUMNS: 158
