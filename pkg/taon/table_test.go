@@ -2,7 +2,7 @@ package taon
 
 import (
 	"bytes"
-	"io/ioutil"
+	"io"
 	"os"
 	"testing"
 )
@@ -18,8 +18,8 @@ func TestRender(t *testing.T) {
 		}
 
 		w := new(bytes.Buffer)
-		table := NewTable(r, w)
-		err = table.Render()
+		table := NewTable()
+		err = table.Render(r, w)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -31,7 +31,7 @@ func TestRender(t *testing.T) {
 		}
 
 		if !bytes.Equal(expect, w.Bytes()) {
-			t.Errorf("Expecting:\n%sgot:\n%s", expect, w.Bytes())
+			t.Errorf("for %s.txt expecting:\n%sgot:\n%s", name, expect, w.Bytes())
 		}
 	}
 }
@@ -45,10 +45,10 @@ func TestRenderMarkdown(t *testing.T) {
 		}
 
 		w := new(bytes.Buffer)
-		table := NewTable(r, w)
+		table := NewTable()
 		table.SetModeMarkdown()
 
-		err = table.Render()
+		err = table.Render(r, w)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -60,7 +60,7 @@ func TestRenderMarkdown(t *testing.T) {
 		}
 
 		if !bytes.Equal(expect, w.Bytes()) {
-			t.Errorf("Expecting:\n%sgot:\n%s", expect, w.Bytes())
+			t.Errorf("for %s.md expecting:\n%sgot:\n%s", name, expect, w.Bytes())
 		}
 	}
 }
@@ -83,10 +83,10 @@ func TestRenderColumns(t *testing.T) {
 		}
 
 		w := new(bytes.Buffer)
-		table := NewTable(r, w)
+		table := NewTable()
 		table.SetColumns(tt.columns)
 
-		err = table.Render()
+		err = table.Render(r, w)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -111,8 +111,8 @@ func TestErrorMiscJSONArray(t *testing.T) {
 	}
 	defer r.Close()
 
-	table := NewTable(r, ioutil.Discard)
-	err = table.Render()
+	table := NewTable()
+	err = table.Render(r, io.Discard)
 	if err == nil {
 		t.Error("Expecting error, got nil")
 	}

@@ -27,6 +27,7 @@ clean:
 	rm -rf dist
 
 .PHONY: run
+run: export COLUMNS=80
 run: $(NAME)
 	cat $(CURDIR)/pkg/taon/testdata/all_docs.json | jq .rows | ./$(NAME) -c key,doc._id,doc._rev,doc.name,doc.rank
 	@echo
