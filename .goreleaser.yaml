@@ -1,3 +1,4 @@
+version: 2
 project_name: taon
 before:
   hooks:
@@ -9,49 +10,56 @@ builds:
       - linux
       - windows
       - darwin
+    goarch:
+      - arm64
+      - amd64
 archives:
-  - replacements:
-      darwin: Darwin
-      linux: Linux
-      windows: Windows
-      386: i386
-      amd64: x86_64
+  - name_template: >-
+      {{- .ProjectName }}_
+      {{- title .Os }}_
+      {{- if eq .Arch "amd64" }}x86_64
+      {{- else }}{{ .Arch }}{{ end }}
+      {{- if .Arm }}v{{ .Arm }}{{ end -}}
+    files:
+      - README.md
+      - LICENSE
 checksum:
-  name_template: 'checksums.txt'
+  name_template: "checksums.txt"
 snapshot:
-  name_template: "{{ incpatch .Version }}-next"
+  version_template: "{{ incpatch .Version }}-rc"
 release:
   prerelease: auto
 changelog:
   sort: asc
+  use: github
   filters:
     exclude:
-      - '^docs:'
-      - '^chore:'
-      - '^test:'
-      - '^ci:'
+      - "^docs:"
+      - "^chore:"
+      - "^test:"
+      - "^ci:"
   groups:
     - title: Features
       regexp: "^.*feat[(\\w)]*:+.*$"
       order: 0
-    - title: 'Bug fixes'
+    - title: "Bug fixes"
       regexp: "^.*fix[(\\w)]*:+.*$"
       order: 1
-    - title: 'Refactorings'
+    - title: "Refactorings"
       regexp: "^.*refactor[(\\w)]*:+.*$"
       order: 2
     - title: Others
       order: 999
 brews:
   - name: taon
-    tap:
+    repository:
       owner: eiri
       name: homebrew-tap
     commit_author:
       name: eiri
       email: eiri@eiri.ca
     commit_msg_template: "feat: brew formula update for {{ .ProjectName }} version {{ .Tag }}"
-    folder: Formula
+    directory: Formula
     homepage: "https://github.com/eiri/taon"
     description: "Transform JSON into ASCII table"
     license: "MIT"
