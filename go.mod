@@ -3,8 +3,8 @@ module github.com/eiri/taon
 go 1.24
 
 require (
+	github.com/alexeyco/simpletable v1.0.0
 	github.com/goccy/go-json v0.10.5
-	github.com/olekukonko/tablewriter v0.0.5
 	golang.org/x/term v0.32.0
 )
 
