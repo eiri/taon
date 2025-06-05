@@ -55,6 +55,7 @@ brews:
     repository:
       owner: eiri
       name: homebrew-tap
+      token: "{{ .Env.GH_HOMEBREW_PAT }}"
     commit_author:
       name: eiri
       email: eiri@eiri.ca
