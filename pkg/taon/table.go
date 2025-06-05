@@ -8,8 +8,8 @@ import (
 	"slices"
 	"sort"
 
+	"github.com/alexeyco/simpletable"
 	"github.com/goccy/go-json"
-	"github.com/olekukonko/tablewriter"
 )
 
 const (
@@ -93,27 +93,25 @@ func (t *Table) Render(r io.Reader, w io.Writer) error {
 		return fmt.Errorf("unexpected token (expected '{' or '['): %q", token)
 	}
 
-	table := tablewriter.NewWriter(w)
-	table.SetAutoFormatHeaders(false)
-	table.SetHeaderAlignment(tablewriter.ALIGN_LEFT)
-	table.SetAutoWrapText(false)
-	table.SetAlignment(tablewriter.ALIGN_LEFT)
+	table := simpletable.New()
+
+	for _, header := range t.headers {
+		table.Header.Cells = append(table.Header.Cells, &simpletable.Cell{Text: header})
+	}
+
+	for _, row := range t.rows {
+		r := make([]*simpletable.Cell, 0)
+		for _, cell := range row {
+			r = append(r, &simpletable.Cell{Text: cell})
+		}
+		table.Body.Cells = append(table.Body.Cells, r)
+	}
 
 	if t.isMarkdown {
-		table.SetBorders(tablewriter.Border{
-			Left:   true,
-			Top:    false,
-			Right:  true,
-			Bottom: false,
-		})
-		table.SetCenterSeparator("|")
+		table.SetStyle(simpletable.StyleMarkdown)
 	}
 
-	table.SetHeader(t.headers)
-	for _, row := range t.rows {
-		table.Append(row)
-	}
-	table.Render()
+	fmt.Fprintln(w, table.String())
 
 	return nil
 }
