@@ -12,7 +12,7 @@ Transform JSON into ASCII table
 
 Install using [Homebrew](https://brew.sh/).
 
-Tap `eiri/tap` with `brew tap eiri/tap` and then run `brew install taon` or just run `brew install eiri/tap/taon`. To update run `brew update` and then `brew upgrade taon`.
+Tap `eiri/tap` with `brew tap eiri/tap` and then run `brew install taon --cask` or just run `brew install eiri/tap/taon`. To update run `brew update` and then `brew upgrade taon`.
 
 ### Linux and Windows
 
