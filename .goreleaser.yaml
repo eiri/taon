@@ -50,8 +50,14 @@ changelog:
       order: 2
     - title: Others
       order: 999
-brews:
+homebrew_casks:
   - name: taon
+    hooks:
+      post:
+        install: |
+          if system_command("/usr/bin/xattr", args: ["-h"]).exit_status == 0
+            system_command "/usr/bin/xattr", args: ["-dr", "com.apple.quarantine", "#{staged_path}/taon"]
+          end
     repository:
       owner: eiri
       name: homebrew-tap
@@ -60,7 +66,6 @@ brews:
       name: eiri
       email: eiri@eiri.ca
     commit_msg_template: "feat: brew formula update for {{ .ProjectName }} version {{ .Tag }}"
-    directory: Formula
     homepage: "https://github.com/eiri/taon"
     description: "Transform JSON into ASCII table"
     license: "MIT"
