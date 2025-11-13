@@ -19,6 +19,10 @@ coverage.out:
 cover: coverage.out
 	go tool cover -html=coverage.out
 
+.PHONY: bench
+bench:
+	go test -v -bench=. -run=BenchmarkRender ./pkg/$(NAME)/...
+
 .PHONY: clean
 clean:
 	go clean

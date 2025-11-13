@@ -2,6 +2,7 @@ package taon
 
 import (
 	"bytes"
+	"fmt"
 	"io"
 	"os"
 	"testing"
@@ -33,6 +34,35 @@ func TestRender(t *testing.T) {
 		if !bytes.Equal(expect, w.Bytes()) {
 			t.Errorf("for %s.txt expecting:\n%sgot:\n%s", name, expect, w.Bytes())
 		}
+	}
+}
+
+// BenchmarkRender bench table render
+func BenchmarkRender(b *testing.B) {
+	for _, rows := range []int{1, 10, 100, 1000, 10000} {
+		b.Run(fmt.Sprintf("%d_rows", rows), func(b *testing.B) {
+
+			prep := bytes.NewBufferString("[")
+			for i := range rows {
+				fmt.Fprintf(prep, `{"num": "%06d", "field": "%06X"}`, i+1, (i+1)*1000000)
+				if i < rows-1 {
+					prep.WriteRune(',')
+				}
+			}
+			prep.WriteRune(']')
+			data := prep.Bytes()
+			table := NewTable()
+
+			b.ResetTimer()
+
+			for b.Loop() {
+				r := bytes.NewReader(data)
+				w := new(bytes.Buffer)
+				if err := table.Render(r, w); err != nil {
+					b.Fatal(err)
+				}
+			}
+		})
 	}
 }
 
