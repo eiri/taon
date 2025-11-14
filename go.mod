@@ -1,6 +1,6 @@
 module github.com/eiri/taon
 
-go 1.24.0
+go 1.25.4
 
 require (
 	github.com/alexeyco/simpletable v1.0.0
