@@ -19,4 +19,7 @@
 # Output of the go coverage tool
 *.out
 
+# Output of pprof
+*.prof
+
 dist/
