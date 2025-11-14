@@ -23,6 +23,18 @@ cover: coverage.out
 bench:
 	go test -v -bench=. -run=BenchmarkRender ./pkg/$(NAME)/...
 
+.PHONY: pprof
+pprof:
+	go test -cpuprofile cpu.prof -memprofile mem.prof -bench=. -run=BenchmarkRender ./pkg/$(NAME)/...
+
+.PHONY: show-pprof-cpu
+show-pprof-cpu:
+	go tool pprof -http=: cpu.prof
+
+.PHONY: show-pprof-mem
+show-pprof-mem:
+	go tool pprof -http=: mem.prof
+
 .PHONY: clean
 clean:
 	go clean
