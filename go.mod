@@ -4,8 +4,7 @@ go 1.24.0
 
 require (
 	github.com/alexeyco/simpletable v1.0.0
-	github.com/goccy/go-json v0.10.5
-	golang.org/x/term v0.37.0
+	golang.org/x/term v0.36.0
 )
 
 require (

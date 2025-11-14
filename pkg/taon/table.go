@@ -1,6 +1,8 @@
 package taon
 
 import (
+	"encoding/json/jsontext"
+	"encoding/json/v2"
 	"errors"
 	"fmt"
 	"io"
@@ -9,7 +11,6 @@ import (
 	"sort"
 
 	"github.com/alexeyco/simpletable"
-	"github.com/goccy/go-json"
 )
 
 const (
@@ -42,55 +43,62 @@ func (t *Table) SetColumns(c Columns) {
 	t.columns = c
 }
 
+func (t *Table) JsontextParser(r io.Reader) error {
+	dec := jsontext.NewDecoder(r)
+	for {
+		// Read a token from the input.
+		tok, err := dec.ReadToken()
+		if err != nil {
+			if err == io.EOF {
+				break
+			}
+			return err
+		}
+
+		fmt.Printf("kind: %c tok: %s\n", tok.Kind(), tok.String())
+	}
+	return nil
+}
+
 // Render generates ascii table
 func (t *Table) Render(r io.Reader, w io.Writer) error {
-	decoder := json.NewDecoder(r)
-	decoder.UseNumber()
+	decoder := jsontext.NewDecoder(r)
 
-	token, err := decoder.Token()
-	if err != nil {
-		return fmt.Errorf("error reading token: %w", err)
-	}
+	switch k := decoder.PeekKind(); k {
+	case '{':
+		// It's an object
+		obj, err := parseObject(decoder)
+		if err != nil {
+			return err
+		}
 
-	switch delim := token.(type) {
-	case json.Delim:
-		switch delim {
-		case '{':
-			// It's an object
-			obj, err := parseObject(decoder)
+		t.buildObject(obj)
+	case '[':
+		// It's an array
+		list := make([]any, 0)
+
+		// discard opening token
+		if _, err := decoder.ReadToken(); err != nil {
+			return err
+		}
+
+		for decoder.PeekKind() != ']' {
+			item, err := parseObject(decoder)
 			if err != nil {
 				return err
 			}
 
-			t.buildObject(obj)
-		case '[':
-			// It's an array
-			list := make([]any, 0)
-
-			for decoder.More() {
-				// Read the opening '{'
-				if _, err := decoder.Token(); err != nil {
-					return fmt.Errorf("error reading opening token: %w", err)
-				}
-				item, err := parseObject(decoder)
-				if err != nil {
-					return err
-				}
-
-				list = append(list, item)
-			}
-
-			// Consume the closing ']'
-			if _, err := decoder.Token(); err != nil && err != io.EOF {
-				return fmt.Errorf("error reading closing token: %w", err)
-			}
-
-			t.buildArray(list)
-		default:
-			return fmt.Errorf("unexpected delimiter: %q", delim)
+			list = append(list, item)
 		}
+
+		// discard closing token
+		if _, err := decoder.ReadToken(); err != nil {
+			return err
+		}
+
+		t.buildArray(list)
 	default:
-		return fmt.Errorf("unexpected token (expected '{' or '['): %q", token)
+		return fmt.Errorf("unexpected token, expected '{' or '[', but got %q", k)
 	}
 
 	table := simpletable.New()
@@ -116,23 +124,33 @@ func (t *Table) Render(r io.Reader, w io.Writer) error {
 	return nil
 }
 
-func parseObject(d *json.Decoder) (map[string]string, error) {
+func parseObject(d *jsontext.Decoder) (map[string]string, error) {
 	obj := make(map[string]string)
 
-	for d.More() {
-		keyToken, err := d.Token()
+	// discard opening token
+	if _, err := d.ReadToken(); err != nil {
+		return nil, err
+	}
+
+	for d.PeekKind() != '}' {
+		keyToken, err := d.ReadToken()
 		if err != nil {
 			return nil, fmt.Errorf("error reading key token: %w", err)
 		}
-		key, ok := keyToken.(string)
-		if !ok {
-			return nil, fmt.Errorf("expected string key, got: %q", keyToken)
-		}
+		key := keyToken.String()
 
 		var val any
-		if err := d.Decode(&val); err != nil {
+		err = json.UnmarshalDecode(d, &val,
+			json.WithUnmarshalers(
+				json.UnmarshalFromFunc(func(dec *jsontext.Decoder, val *any) error {
+					if dec.PeekKind() == '0' {
+						*val = jsontext.Value(nil)
+					}
+					return json.SkipFunc
+				}),
+			))
+		if err != nil {
 			return nil, fmt.Errorf("error decoding value: %w", err)
-
 		}
 		flat := make(map[string]any)
 		flatten(key, val, flat)
@@ -141,9 +159,9 @@ func parseObject(d *json.Decoder) (map[string]string, error) {
 		}
 	}
 
-	// Read the closing '}'
-	if _, err := d.Token(); err != nil {
-		return nil, fmt.Errorf("error reading closing token: %w", err)
+	// discard closing token
+	if _, err := d.ReadToken(); err != nil {
+		return nil, err
 	}
 
 	return obj, nil
