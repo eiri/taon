@@ -12,6 +12,10 @@ $(NAME): $(SRC)
 test:
 	COLUMNS=158 go test -v ./pkg/taon/...
 
+.PHONY: fuzz
+fuzz:
+	go test -v -run=FuzzParseObject -fuzztime=1m ./pkg/taon/...
+
 coverage.out:
 	go test -covermode=count -coverprofile=coverage.out ./pkg/$(NAME)/...
 

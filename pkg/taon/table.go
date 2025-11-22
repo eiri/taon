@@ -2,7 +2,6 @@ package taon
 
 import (
 	"encoding/json/jsontext"
-	"encoding/json/v2"
 	"errors"
 	"fmt"
 	"io"
@@ -41,23 +40,6 @@ func (t *Table) SetModeMarkdown() {
 // SetColumns to restrict output to only given columns
 func (t *Table) SetColumns(c Columns) {
 	t.columns = c
-}
-
-func (t *Table) JsontextParser(r io.Reader) error {
-	dec := jsontext.NewDecoder(r)
-	for {
-		// Read a token from the input.
-		tok, err := dec.ReadToken()
-		if err != nil {
-			if err == io.EOF {
-				break
-			}
-			return err
-		}
-
-		fmt.Printf("kind: %c tok: %s\n", tok.Kind(), tok.String())
-	}
-	return nil
 }
 
 // Render generates ascii table
@@ -124,47 +106,69 @@ func (t *Table) Render(r io.Reader, w io.Writer) error {
 	return nil
 }
 
+// parseObject parses JSON from decoder into map[string]string
 func parseObject(d *jsontext.Decoder) (map[string]string, error) {
-	obj := make(map[string]string)
+	m := make(map[string]string)
+	err := parseInternal(d, m, "")
+	return m, err
+}
 
-	// discard opening token
-	if _, err := d.ReadToken(); err != nil {
-		return nil, err
+// parseInternal recursively parses JSON tokens into map[string]string.
+// prefix is the dotted key path ("a.b.c").
+func parseInternal(d *jsontext.Decoder, out map[string]string, prefix string) error {
+	tok, err := d.ReadToken()
+	if err != nil {
+		return err
 	}
 
-	for d.PeekKind() != '}' {
-		keyToken, err := d.ReadToken()
-		if err != nil {
-			return nil, fmt.Errorf("error reading key token: %w", err)
-		}
-		key := keyToken.String()
+	switch tok.Kind() {
+	case '{':
+		for {
+			tok, err := d.ReadToken()
+			if err != nil {
+				return err
+			}
+			if tok.Kind() == '}' {
+				return nil
+			}
 
-		var val any
-		err = json.UnmarshalDecode(d, &val,
-			json.WithUnmarshalers(
-				json.UnmarshalFromFunc(func(dec *jsontext.Decoder, val *any) error {
-					if dec.PeekKind() == '0' {
-						*val = jsontext.Value(nil)
-					}
-					return json.SkipFunc
-				}),
-			))
-		if err != nil {
-			return nil, fmt.Errorf("error decoding value: %w", err)
+			key := tok.String()
+			fullKey := key
+			if prefix != "" {
+				fullKey = prefix + "." + key
+			}
+
+			if err := parseInternal(d, out, fullKey); err != nil {
+				return err
+			}
 		}
-		flat := make(map[string]any)
-		flatten(key, val, flat)
-		for k, v := range flat {
-			obj[k] = makeCell(v)
+	case '[':
+		idx := 0
+		for {
+			tok := d.PeekKind()
+			if tok == ']' {
+				_, _ = d.ReadToken() // consume ]
+				return nil
+			}
+
+			itemPrefix := fmt.Sprintf("%s.%d", prefix, idx)
+			if prefix == "" {
+				itemPrefix = fmt.Sprintf("%d", idx)
+			}
+
+			if err := parseInternal(d, out, itemPrefix); err != nil {
+				return err
+			}
+			idx++
 		}
+	default:
+		if prefix == "" {
+			return errors.New("top-level value must be an object")
+		}
+
+		out[prefix] = tok.String()
+		return nil
 	}
-
-	// discard closing token
-	if _, err := d.ReadToken(); err != nil {
-		return nil, err
-	}
-
-	return obj, nil
 }
 
 // renderObject generates ascii table for object data
