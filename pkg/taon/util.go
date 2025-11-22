@@ -1,54 +1,11 @@
 package taon
 
 import (
-	"fmt"
 	"os"
 	"strconv"
 
 	"golang.org/x/term"
 )
-
-// makeCell converts from typed input to string representation
-func makeCell(v any) string {
-	switch vv := v.(type) {
-	case string:
-		return vv
-	case bool:
-		return strconv.FormatBool(vv)
-	case int:
-		return strconv.Itoa(vv)
-	case int64:
-		return strconv.FormatInt(vv, 10)
-	case uint64:
-		return strconv.FormatUint(vv, 10)
-	case float64:
-		return strconv.FormatFloat(vv, 'f', 2, 64)
-	case fmt.Stringer:
-		return vv.String()
-	}
-	return fmt.Sprintf("%v", v)
-}
-
-// flatten recursively flattens nested maps and slices into dot-separated key paths
-func flatten(topKey string, value any, result map[string]any) {
-	switch v := value.(type) {
-	case map[string]any:
-		for key, val := range v {
-			newKey := key
-			if topKey != "" {
-				newKey = topKey + "." + key
-			}
-			flatten(newKey, val, result)
-		}
-	case []any:
-		for i, item := range v {
-			newKey := topKey + "." + strconv.Itoa(i)
-			flatten(newKey, item, result)
-		}
-	default:
-		result[topKey] = v
-	}
-}
 
 // AllocateColumnWidths distributes widths as evenly as possible across columns,
 // trying to fully utilize maxWidth, without exceeding each column's desired width.
