@@ -13,15 +13,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           fetch-depth: 0
       - name: Fetch tags
         run: git fetch --force --tags
-      - name: Setup go 1.24
+      - name: Setup go 1.25
         uses: actions/setup-go@v5
         with:
-          go-version: 1.24
+          go-version: 1.25
           check-latest: true
           cache: true
       - name: Build release
@@ -33,3 +33,4 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GH_HOMEBREW_PAT: ${{ secrets.GH_HOMEBREW_PAT }}
+          GOEXPERIMENT: jsonv2
