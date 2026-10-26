@@ -52,16 +52,18 @@ changelog:
       order: 999
 homebrew_casks:
   - name: taon
-    hooks:
-      post:
-        install: |
-          if system_command("/usr/bin/xattr", args: ["-h"]).exit_status == 0
-            system_command "/usr/bin/xattr", args: ["-dr", "com.apple.quarantine", "#{staged_path}/taon"]
-          end
+    custom_block: |
+      postflight_steps do
+        on_macos do
+          run "/usr/bin/xattr",
+              args: ["-dr", "com.apple.quarantine", "{{staged_path}}/taon"],
+              must_succeed: false
+        end
+      end
     repository:
       owner: eiri
       name: homebrew-tap
-      token: "{{ .Env.GH_HOMEBREW_PAT }}"
+      token: "{{ .Env.HOMEBREW_TOKEN }}"
     commit_author:
       name: eiri
       email: eiri@eiri.ca
