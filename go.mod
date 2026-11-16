@@ -3,13 +3,13 @@ module github.com/eiri/taon
 go 1.26.0
 
 require (
-	github.com/alexeyco/simpletable v1.0.0
+	github.com/alexeyco/simpletable v1.1.0
 	golang.org/x/term v0.47.0
 )
 
 require (
 	github.com/clipperhouse/stringish v0.1.1 // indirect
 	github.com/clipperhouse/uax29/v2 v2.3.0 // indirect
-	github.com/mattn/go-runewidth v0.0.19 // indirect
+	github.com/mattn/go-runewidth v0.0.31 // indirect
 	golang.org/x/sys v0.49.0 // indirect
 )
