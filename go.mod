@@ -3,7 +3,7 @@ module github.com/eiri/taon
 go 1.26.0
 
 require (
-	github.com/alexeyco/simpletable v1.1.0
+	github.com/alexeyco/simpletable v1.2.1
 	golang.org/x/term v0.48.0
 )
 
